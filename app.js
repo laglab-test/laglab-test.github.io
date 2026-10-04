@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '102';   // Stand der Test-App
+const APP_VERSION = '103';   // Stand der Test-App
 const STORE_KEY = 'lagcam.test.settings';
 const MAIN_STORE_KEY = 'turmdelay.settings.v1';   // Einstellungen der normalen App
 const KEY_INTERVAL_MS = 1000;      // Keyframe etwa jede Sekunde
@@ -826,7 +826,7 @@ async function saveNow() {
   }
 }
 
-// Rückmeldung, wenn ein Knopf lang genug gehalten wurde: ein kurzer Impuls und ein Aufleuchten in hellerer Akzentfarbe.
+// Rückmeldung, wenn ein Knopf lang genug gehalten wurde: ein kurzer Impuls, und der Fortschrittsring leuchtet heller auf.
 // Hat das Gerät keinen Vibrationsmotor, bleibt das Aufleuchten. In der Android-App vibriert Android selbst.
 const BUZZ_MS = 40, FLASH_MS = 350;
 function confirmPress(btn) {

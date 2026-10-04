@@ -973,12 +973,11 @@ html.tvfit #out { object-fit: fill; }
 #helpBody dt i .dot { width: 18px; height: 18px; border-radius: 50%; background: #ffd21f; }
 #helpBody dt i[data-ico="#pPlay .i-play"] svg, #helpBody dt i[data-ico="#pPrev"] svg, #helpBody dt i[data-ico="#pNext"] svg { fill: currentColor; stroke: none; }
 
-/* Lang genug gehalten: Ring und Fläche leuchten kurz in hellerer Akzentfarbe auf und blenden dann aus */
+/* Lang genug gehalten: nur der dünne Fortschrittsring leuchtet kurz in hellerer Akzentfarbe auf */
 #saveBtn, #slowBtn { --flash: color-mix(in srgb, var(--acc) 60%, #fff); }
 #saveBtn.flash, #slowBtn.flash { transform: scale(4.2); }   /* bleibt groß wie beim Halten, schrumpft danach */
-#saveBtn.flash .track, #slowBtn.flash .track { fill: var(--flash); stroke: var(--flash); transition: none; }
 #saveBtn.flash .prog, #slowBtn.flash .prog { stroke: var(--flash); stroke-dashoffset: 0; transition: none; }
-#saveBtn .track, #slowBtn .track { transition: fill .3s, stroke .3s; }
+#saveBtn .prog, #slowBtn .prog { transition: stroke .3s; }
 
 /* ---------- Eigene Auswahllisten der Filter ---------- */
 /* Android zeichnet die Liste eines select selbst und immer weiß. Das select bleibt unsichtbar als Ablage der Werte. */
