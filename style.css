@@ -1009,10 +1009,12 @@ html.tvfit #out { object-fit: fill; }
 .ddGroup { padding: 10px 14px 4px; font: 12px var(--mono); letter-spacing: 0.08em; color: var(--mut); }
 
 /* ---------- Ansichten der Übersicht ---------- */
-/* Filter mittig zwischen dem Knopf Ansicht und Vergleichen */
+/* Ansicht und Filter mittig zwischen „Videos | Bilder“ und „Vergleichen“ */
 .filters .fMid { flex: 1; min-width: 0; display: flex; gap: 10px; align-items: center; justify-content: center; }
 .invis { visibility: hidden; }
 #fView { min-width: 96px; }
+/* Ansicht und Vergleichen im Grau der nicht gewählten Reiter wie „Bilder“ oder „Live“ */
+#fView, #fCmp:not(.on) { color: var(--mut); }
 .day { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .day .cnt { font: 12px var(--mono); letter-spacing: 0.04em; text-transform: none; color: var(--mut); }
 .card .thStar { display: none; position: absolute; right: 4px; top: 1px; font-size: 15px; color: var(--warn); text-shadow: 0 0 3px rgba(0, 0, 0, 0.9); }

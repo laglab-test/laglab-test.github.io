@@ -120,10 +120,10 @@
     </header>
     <div class="filters">
       <nav class="tabs" id="fKind"><button data-k="videos" class="on">Videos</button><button data-k="images">Bilder</button></nav>
-      <!-- Ansicht: jedes Tippen schaltet weiter, Tage, Wochen, Monate, Jahre -->
-      <button id="fView" class="chip" aria-label="Ansicht">Tage</button>
-      <!-- Die Filter stehen mittig zwischen Ansicht und Vergleichen -->
+      <!-- Ansicht und Filter stehen als Gruppe mittig zwischen „Videos | Bilder“ und „Vergleichen“.
+           Die Ansicht schaltet bei jedem Tippen weiter, Tage, Wochen, Monate, Jahre. -->
       <div class="fMid">
+        <button id="fView" class="chip" aria-label="Ansicht">Tage</button>
         <button id="fStar" class="chip" aria-label="Nur mit Stern">★</button>
         <select id="fName" aria-label="Name" data-notr></select>
         <select id="fProp" aria-label="Stichwort" data-notr></select>
