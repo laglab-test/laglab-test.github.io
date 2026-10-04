@@ -31,7 +31,7 @@ function toggleCmpSelect(id) {
 function renderCmpSelect() {
   const on = !!cmpSelect;
   const images = listFilter.kind === 'images';
-  $('fCmp').classList.toggle('hidden', images);
+  $('fCmp').classList.toggle('invis', images);   // unsichtbar, aber mit Platz, damit die Filter nicht springen
   $('fCmp').classList.toggle('on', on);
   $('fCmpGo').classList.toggle('hidden', !on);
   const n = on ? cmpSelect.length : 0;

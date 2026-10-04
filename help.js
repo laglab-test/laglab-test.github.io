@@ -41,13 +41,14 @@ const HELP_HTML = `
 
 <section id="h-list">
   <h3><span class="no">04</span>Analyse</h3>
-  <p>Unter „Analyse“ liegen alle gespeicherten Videos und Bilder, nach Tagen geordnet, die neuesten zuerst. Oben links wechseln Sie zwischen „Videos“ und „Bilder“.</p>
+  <p>Unter „Analyse“ liegen alle gespeicherten Videos und Bilder, die neuesten zuerst. Oben links wechseln Sie zwischen „Videos“ und „Bilder“.</p>
+  <p>Der Knopf daneben wählt die Ansicht. Jedes Tippen schaltet weiter, von Tage über Wochen und Monate zu Jahre. Je größer der Zeitraum, desto kleiner die Kacheln. So sehen Sie schnell, wann Videos gespeichert wurden. Unter Jahre steht jeder Monat als eine Kachel mit der Anzahl.</p>
+  <p>Ein Tippen auf eine Kachel führt eine Stufe tiefer zu genau diesem Video, von Jahre zu Monate, von Monate zu Wochen und von Wochen zu Tage. Erst unter Tage öffnet sich das Video. Die Zurück-Geste führt wieder eine Stufe hinauf. Beim Öffnen der Analyse steht die Ansicht immer auf Tage.</p>
   <figure><img src="hilfe/analyse.jpg" width="1280" height="800" alt="Übersicht der Analyse"><figcaption>Die Übersicht mit den Filtern oben</figcaption></figure>
   <p>Videos heißen nach ihrer Nummer am Tag, also 1, 2, 3. Das fünfte Bild aus Video 4 heißt 4.5. Bilder aus einem Vergleich heißen vs1.1, vs1.2 und so weiter. Jeden Tag beginnt die Zählung neu, eine Nummer wird nie zweimal vergeben.</p>
   <dl>
     <dt>★</dt><dd>Zeigt nur Einträge mit Stern.</dd>
     <dt>Name und Stichwort</dt><dd>Zeigt nur Einträge mit diesem Namen oder Stichwort. Beides tragen Sie im Player ein.</dd>
-    <dt>Zeit</dt><dd>Zeigt nur einen Monat. Die Zahl in Klammern sagt, wie viele Einträge es dort gibt.</dd>
     <dt>vs</dt><dd>Nur unter „Bilder“. Zeigt nur Bilder aus Vergleichen.</dd>
     <dt>×</dt><dd>Setzt alle Filter zurück.</dd>
   </dl>
@@ -99,7 +100,7 @@ const HELP_HTML = `
   <p>Im Vergleich sehen Sie zwei bis vier Videos nebeneinander, etwa denselben Sprung von heute und von vor einem Jahr.</p>
   <ol>
     <li>Tippen Sie unter „Videos“ rechts auf „Vergleichen“.</li>
-    <li>Tippen Sie die Videos an. Jedes bekommt eine Nummer. Die Auswahl bleibt, auch wenn Sie dazwischen die Filter ändern, etwa unter „Zeit“ einen alten Monat wählen.</li>
+    <li>Tippen Sie die Videos an. Jedes bekommt eine Nummer. Die Auswahl bleibt, auch wenn Sie dazwischen Filter oder Ansicht ändern. Unter Monate sehen Sie viele Videos auf einmal und können etwa ein Video von heute und eines von vor einem Jahr nacheinander antippen.</li>
     <li>Tippen Sie auf „Öffnen“.</li>
   </ol>
   <figure><img src="hilfe/vergleich.jpg" width="1280" height="800" alt="Vergleich"><figcaption>Zwei Videos im Vergleich, unter dem Bild die Regler zum Ausrichten</figcaption></figure>
