@@ -67,6 +67,7 @@ const TR_ROWS = [
   ['Nur mit Stern', 'Starred only', 'Solo con estrella', 'Só com estrela', 'Favoris uniquement', 'Solo con stella'],
   ['Name', 'Name', 'Nombre', 'Nome', 'Nom', 'Nome'],
   ['Stichwort', 'Keyword', 'Palabra clave', 'Palavra-chave', 'Mot-clé', 'Parola chiave'],
+  ['Zeit', 'Date', 'Fecha', 'Data', 'Date', 'Data'],
   ['Vergleichen', 'Compare', 'Comparar', 'Comparar', 'Comparer', 'Confronta'],
   ['Vergleiche', 'Comparisons', 'Comparaciones', 'Comparações', 'Comparaisons', 'Confronti'],
   ['Öffnen ({0})', 'Open ({0})', 'Abrir ({0})', 'Abrir ({0})', 'Ouvrir ({0})', 'Apri ({0})'],

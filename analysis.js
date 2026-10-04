@@ -231,7 +231,7 @@ let analysisCamTimer = 0;
 function enterAnalysis() {
   mode = 'analysis';
   // Jedes Öffnen beginnt mit allen Videos, ohne Filter und oben in der Liste
-  Object.assign(listFilter, { kind: 'videos', star: false, name: '', prop: '', cmp: false });
+  Object.assign(listFilter, { kind: 'videos', star: false, name: '', prop: '', month: '', cmp: false });
   cmpSelect = null;
   listScroll = null;
   $('aGrid').scrollTop = 0;
@@ -318,10 +318,12 @@ let listGen = 0;
 let listScroll = null;   // Position der Liste, bevor ein Video geöffnet wurde
 let listClips = [];
 let listImages = [];
-const listFilter = { kind: 'videos', star: false, name: '', prop: '', cmp: false };   // cmp: unter „Bilder“ nur Vergleichsbilder
+// cmp: unter „Bilder“ nur Vergleichsbilder. month: ein Monat als „2025-10“, leer heißt alle.
+const listFilter = { kind: 'videos', star: false, name: '', prop: '', month: '', cmp: false };
 
-// Gilt für Videos und für Bilder, Bilder übernehmen Stern, Name und Stichwort von ihrem Video
-const passesFilter = c => (!listFilter.star || c.star) && (!listFilter.name || c.name === listFilter.name) && (!listFilter.prop || c.prop === listFilter.prop);
+// Gilt für Videos und für Bilder, Bilder übernehmen Stern, Name, Stichwort und Tag von ihrem Video
+const inMonth = c => !listFilter.month || c.day.slice(0, 7) === listFilter.month;
+const passesFilter = c => (!listFilter.star || c.star) && (!listFilter.name || c.name === listFilter.name) && (!listFilter.prop || c.prop === listFilter.prop) && inMonth(c);
 const clipById = id => listClips.find(c => c.id === id);
 
 async function showList() {
@@ -385,12 +387,36 @@ function sortItems(items) {
 
 // Bilder so, wie die Liste „Bilder“ sie zeigt. Name und Stichwort kommen vom Video, der Stern vom Bild selbst.
 // keepId bleibt immer dabei, damit das offene Bild seine Nachbarn behält, auch wenn es nicht mehr zum Filter passt.
-function listImageItems(keepId = null) {
+function listImageItems(keepId = null, month = true) {
   const items = listImages
     .map(im => ({ im, c: isCmp(im) ? im : clipById(im.clipId) }))
     .filter(x => x.c && (x.im.id === keepId || ((!listFilter.cmp || isCmp(x.im)) && (!listFilter.star || x.im.star)
-      && (!listFilter.name || x.c.name === listFilter.name) && (!listFilter.prop || x.c.prop === listFilter.prop))));
+      && (!listFilter.name || x.c.name === listFilter.name) && (!listFilter.prop || x.c.prop === listFilter.prop)
+      && (!month || inMonth(x.c)))));
   return sortItems(items);
+}
+
+// Auswahl „Zeit“: nur Monate, in denen es zu den übrigen Filtern Videos oder Bilder gibt, neueste zuerst, nach Jahren
+// gruppiert und mit der Anzahl. Ein gewählter Monat bleibt stehen, auch wenn er gerade leer ist, das × setzt ihn zurück.
+function fillMonths(sel, clips) {
+  const f = listFilter;
+  const days = f.kind === 'images'
+    ? listImageItems(null, false).map(x => x.c.day)
+    : clips.filter(c => (!f.star || c.star) && (!f.name || c.name === f.name) && (!f.prop || c.prop === f.prop)).map(c => c.day);
+  const count = new Map();
+  for (const d of days) count.set(d.slice(0, 7), (count.get(d.slice(0, 7)) || 0) + 1);
+  if (f.month && !count.has(f.month)) count.set(f.month, 0);
+  sel.textContent = '';
+  sel.append(new Option(tr('Zeit'), ''));
+  let year = null, group = null;
+  for (const m of [...count.keys()].sort().reverse()) {
+    const [y, mo] = m.split('-').map(Number);
+    if (y !== year) { year = y; group = document.createElement('optgroup'); group.label = String(y); sel.append(group); }
+    const name = new Date(y, mo - 1, 1).toLocaleDateString(LOCALE[lang], { month: 'long', year: 'numeric' });
+    group.append(new Option(`${name} (${count.get(m)})`, m));
+  }
+  sel.value = f.month;
+  sel.disabled = !count.size;
 }
 
 function fillSelect(sel, label, values, current) {
@@ -411,6 +437,7 @@ function renderFilter(clips) {
   if (listFilter.prop && !props.includes(listFilter.prop)) listFilter.prop = '';
   fillSelect($('fName'), tr('Name'), names, listFilter.name);
   fillSelect($('fProp'), tr('Stichwort'), props, listFilter.prop);
+  fillMonths($('fMonth'), clips);
   $('fStar').classList.toggle('on', listFilter.star);
   $('fStar').disabled = !clips.length && !listImages.length;
   // „vs“ ist unter „Bilder“ ein Filter für Vergleichsbilder zwischen Stichwort und ×, ausgegraut, solange es keine gibt
@@ -420,7 +447,7 @@ function renderFilter(clips) {
   $('fCmpF').classList.toggle('on', listFilter.cmp);
   $('fCmpF').disabled = !hasCmp;
   // Zurücksetzen ist ausgegraut, solange kein Filter gewählt ist
-  $('fReset').disabled = !(listFilter.star || listFilter.name || listFilter.prop || (images && listFilter.cmp));
+  $('fReset').disabled = !(listFilter.star || listFilter.name || listFilter.prop || listFilter.month || (images && listFilter.cmp));
   for (const b of $('fKind').querySelectorAll('button')) b.classList.toggle('on', b.dataset.k === listFilter.kind);
 }
 
@@ -494,11 +521,12 @@ renderKeep();
 $('fStar').addEventListener('click', () => { listFilter.star = !listFilter.star; renderList(listClips); });
 $('fCmpF').addEventListener('click', () => { listFilter.cmp = !listFilter.cmp; renderList(listClips); });
 $('fReset').addEventListener('click', () => {
-  Object.assign(listFilter, { star: false, name: '', prop: '', cmp: false });
+  Object.assign(listFilter, { star: false, name: '', prop: '', month: '', cmp: false });
   renderList(listClips);
 });
 $('fName').addEventListener('change', e => { listFilter.name = e.target.value; renderList(listClips); });
 $('fProp').addEventListener('change', e => { listFilter.prop = e.target.value; renderList(listClips); });
+$('fMonth').addEventListener('change', e => { listFilter.month = e.target.value; $('aGrid').scrollTop = 0; renderList(listClips); });
 $('fKind').addEventListener('click', e => {
   const b = e.target.closest('button');
   if (!b || b.dataset.k === listFilter.kind) return;

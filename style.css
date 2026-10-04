@@ -633,14 +633,14 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
 
 /* Filter in der Liste */
 .filters { flex: 0 0 auto; display: flex; gap: 10px; align-items: center; padding: 12px 0 0; }
-.chip, #fName, #fProp {
+.chip, #fName, #fProp, #fMonth {
   min-height: 44px; padding: 0 14px; border-radius: 22px;
   border: 1px solid var(--line-2); background: var(--surface); color: var(--fg);
   font: 600 15px var(--sans);
 }
 .chip.on { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
-#fName:disabled, #fProp:disabled { opacity: 0.4; }
-#fName, #fProp { max-width: 240px; text-overflow: ellipsis; }
+#fName:disabled, #fProp:disabled, #fMonth:disabled { opacity: 0.4; }
+#fName, #fProp, #fMonth { max-width: 240px; text-overflow: ellipsis; }
 /* Vergleich: Auswahl in der Übersicht */
 #fCmp { margin-left: auto; }
 #fCmpGo { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
