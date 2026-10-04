@@ -966,9 +966,6 @@ html.tvfit #out { object-fit: fill; }
 #helpBody dl { margin: 4px 0 12px; display: grid; grid-template-columns: minmax(140px, max-content) minmax(0, 1fr); gap: 8px 18px; }
 #helpBody dt { font-weight: 650; display: flex; align-items: flex-start; gap: 6px; }
 #helpBody dd { margin: 0; color: var(--fg); }
-#helpBody figure { margin: 8px 0 14px; }
-#helpBody img { display: block; width: 100%; height: auto; max-width: 640px; border-radius: 8px; border: 1px solid var(--line-2); }
-#helpBody figcaption { margin-top: 6px; font-size: 14px; color: var(--mut); }
 /* Symbole aus der App neben dem Begriff */
 #helpBody dt i { flex: 0 0 auto; display: inline-grid; place-items: center; width: 26px; height: 24px; color: var(--mut); }
 #helpBody dt i svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
