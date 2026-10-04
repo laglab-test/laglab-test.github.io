@@ -413,7 +413,7 @@ function renderFilter(clips) {
   fillSelect($('fProp'), tr('Stichwort'), props, listFilter.prop);
   $('fStar').classList.toggle('on', listFilter.star);
   $('fStar').disabled = !clips.length && !listImages.length;
-  // Vergleiche ist unter „Bilder“ ein Filter neben dem Stern, ausgegraut, solange es kein Vergleichsbild gibt
+  // „vs“ ist unter „Bilder“ ein Filter für Vergleichsbilder zwischen Stichwort und ×, ausgegraut, solange es keine gibt
   const images = listFilter.kind === 'images', hasCmp = listImages.some(isCmp);
   if (!hasCmp) listFilter.cmp = false;
   $('fCmpF').classList.toggle('hidden', !images);

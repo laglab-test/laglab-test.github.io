@@ -434,7 +434,7 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
 #aPlayer.imgMode .pctl, #aPlayer.imgMode #pRange, #aPlayer.imgMode #dCut, #aPlayer.imgMode #dStrobe { display: none; }
 /* Bildfolge vorerst ausgeblendet, an ihrer Stelle steht Raster */
 #dStrobe { display: none; }
-#pBack { min-height: 52px; padding: 0 22px; font-size: 17px; }
+#pBack { min-height: 44px; padding: 0 22px; font-size: 17px; }   /* so hoch wie die Knöpfe rechts in der Kopfzeile */
 .clipNav .nav { width: 48px; padding: 0; font-size: 26px; line-height: 1; }
 .nav:disabled { opacity: 0.3; }
 .nav:active, .tool:active { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 8%, transparent); }
@@ -645,8 +645,10 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
 #fCmp { margin-left: auto; }
 #fCmpGo { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
 #fCmpGo:disabled { opacity: 0.45; }
+/* Filter für Vergleichsbilder, klein und rund wie der Stern, „vs“ versteht man in jeder Sprache */
+#fCmpF { width: 44px; padding: 0; display: grid; place-items: center; }
 #fCmpF:disabled { opacity: 0.4; }
-/* Filter zurücksetzen, klein und rund, direkt rechts neben Stichwort */
+/* Filter zurücksetzen, klein und rund, rechts neben Stichwort und vs */
 #fReset { width: 44px; padding: 0; display: grid; place-items: center; }
 #fReset svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
 #fReset:disabled { opacity: 0.35; }
@@ -731,13 +733,13 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
 #splash.out { opacity: 0; pointer-events: none; }
 
 /* Umschaltung „Video | Bilder“ in der Kopfzeile des Fensters */
-#pKind button { min-width: 84px; min-height: 40px; padding: 0 14px; }
+#pKind button { min-width: 84px; min-height: 0; padding: 0 14px; }
 #pKind button:disabled { opacity: 0.35; }
 #pName, #pProp { width: 150px; }
 /* Kopfzeile in zwei Bereichen. Links Zurück, „Video | Bilder“ und der Titel, alles andere rechts.
    Links bleibt mindestens Platz für Zurück und den Umschalter, nur der Titel wird gekürzt. */
 .pbar { display: grid; grid-template-columns: minmax(min-content, 1fr) minmax(0, max-content); }
-#pKind { flex: 0 0 auto; }
+#pKind { flex: 0 0 auto; height: 44px; }   /* so hoch wie die Knöpfe rechts, die Teile füllen die Höhe */
 .pL, .pR { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .pR { justify-content: flex-end; grid-column: 2; }
 /* Name und Stichwort werden bei Platzmangel schmaler, damit die Kopfzeile in einer Zeile bleibt */
@@ -911,3 +913,11 @@ html.tvfit #out { object-fit: fill; }
 }
 /* Ab „Groß“ teilen sich Name und Stichwort die zweite Zeile, auch wenn der Platz knapp ist */
 
+/* Einstellungen: alle Knöpfe so hoch wie „Videos | Bilder“ in der Analyse. Einzelne Knöpfe haben die Höhe
+   der ganzen Umschaltung, die Teile einer Umschaltung die Höhe ihrer Knöpfe. Steht am Ende und mit #uiMain,
+   damit es die Regeln für Größen und niedrige Rahmen überstimmt. */
+#uiMain .tool { height: 46px; min-height: 0; }
+#uiMain #langBtn, #uiMain #slowSet { flex: 0 0 auto; }   /* stehen in einer Spalte und sollen dort nicht in die Höhe wachsen */
+#uiMain .seg { height: 46px; }
+#uiMain .seg button { min-height: 0; }
+#uiMain .step.xs { width: 46px; height: 46px; flex-basis: 46px; }

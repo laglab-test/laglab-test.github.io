@@ -3,7 +3,7 @@
 // Zeichnen, Winkel messen und Zoom im Standbild der Analyse. Nutzt pc, pCanvas und Hilfen aus analysis.js.
 // Zeichnungen liegen in Bildpunkten des Videos und bleiben so auch beim Zoomen an ihrer Stelle.
 
-const COLORS = ['#ffd21f', '#ff4d4d', '#37d3c4', '#ffffff'];
+const COLORS = ['#ffd21f', '#ff4d4d', '#3ee05a', '#37d3c4', '#ffffff'];   // Gelb, Rot, Grün, Türkis, Weiß
 const HANDLE_PX = 30;       // so nah muss ein Finger an einem Punkt sein, um ihn zu verschieben
 const LINE_PX = 4;          // Strichstärke auf dem Bildschirm, unabhängig vom Zoom
 const MAX_ZOOM = 8;

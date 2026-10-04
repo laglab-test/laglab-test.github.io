@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '97';   // Stand der Test-App
+const APP_VERSION = '98';   // Stand der Test-App
 const STORE_KEY = 'lagcam.test.settings';
 const MAIN_STORE_KEY = 'turmdelay.settings.v1';   // Einstellungen der normalen App
 const KEY_INTERVAL_MS = 1000;      // Keyframe etwa jede Sekunde
@@ -1293,9 +1293,9 @@ const TV_RANGE = { w: [40, 100], h: [40, 100], x: [-30, 30], y: [-30, 30] };
 const TV_STEP = 0.5;
 
 // Ausgangswert: das Video über die volle Breite in 16:9, wie in der normalen Anzeige
+// Vorgabe beim ersten Anpassen ist der ganze Bildschirm
 function tvDefaults() {
-  const h = Math.min(100, Math.round(innerWidth * 9 / 16 / innerHeight * 100 / TV_STEP) * TV_STEP);
-  return { w: 100, h, x: 0, y: 0 };
+  return { w: 100, h: 100, x: 0, y: 0 };
 }
 
 function placeBox(el, t) {
@@ -1500,8 +1500,8 @@ async function applyUpdateAtStart() {
   return false;
 }
 
-// Startbildschirm. Er bleibt mindestens so lange ab dem Öffnen stehen, dann blendet er weich aus.
-const SPLASH_MS = 1300;
+// Startbildschirm. Er bleibt ab dem Öffnen immer 3,3 Sekunden stehen, dann blendet er weich aus.
+const SPLASH_MS = 3300;
 function hideSplash() {
   const s = $('splash');
   if (!s || s.classList.contains('out')) return;
