@@ -207,15 +207,16 @@ function makeMp4(cfg, frames, bytes, skip = 0) {
   return new Blob([ftyp, moov(ftyp.length + moovLen + 8), mdatHead, bytes], { type: 'video/mp4' });
 }
 
-// 2026-10-02_v3_Teo_Kopfsprung.mp4 und 2026-10-02_v3.1_Teo_Kopfsprung.jpg.
+// 2026-10-02_3_Teo_Kopfsprung.mp4 und 2026-10-02_3.1_Teo_Kopfsprung.jpg, Vergleichsbilder 2026-10-02_vs1.1.jpg.
 // Fehlen Name oder Stichwort, entfällt der jeweilige Teil.
 const cleanPart = v => (v || '').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '');
 function fileName(c, label, ext) {
   const parts = [c.day, label.replace(/\s+/g, '-'), cleanPart(c.name), cleanPart(c.prop)].filter(Boolean);
   return parts.join('_') + ext;
 }
-const clipLabel = c => 'v' + c.nr;
-const imageLabel = (c, im) => (isCmp(im) ? `vgl${im.nr}.${im.n}` : `v${c.nr}.${im.n}`);
+// Videos und ihre Bilder tragen nur Zahlen, Vergleiche „vs“ davor. Gespeichert sind nur die Nummern.
+const clipLabel = c => String(c.nr);
+const imageLabel = (c, im) => (isCmp(im) ? `vs${im.nr}.${im.n}` : `${c.nr}.${im.n}`);
 const clipFileName = c => fileName(c, clipLabel(c), '.mp4');
 const imageFileName = (c, im) => fileName(c, imageLabel(c, im), '.jpg');
 
@@ -374,7 +375,7 @@ function renderList(clips) {
 }
 
 // Neueste Videos zuerst, die Bilder eines Videos in ihrer Reihenfolge v3.1, v3.2, v3.3.
-// Bilder eines Vergleichs stehen zusammen wie die Bilder eines Videos, vgl1.1 vor vgl1.2.
+// Bilder eines Vergleichs stehen zusammen wie die Bilder eines Videos, vs1.1 vor vs1.2.
 function sortItems(items) {
   const groupKey = x => (isCmp(x.im) ? 'vgl' + x.im.day + '#' + x.im.nr : 'clip' + x.c.id);
   const groupTime = new Map();
