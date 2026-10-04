@@ -779,13 +779,11 @@ html.big #pTools {
 }
 html.big #dUndo,
 html.big #dSave,
-html.big #dCut { grid-column-start: 1; }   /* Schneiden beginnt eine neue Reihe und steht neben Raster */
+html.big #dGrid { grid-column-start: 1; }   /* Raster beginnt eine neue Reihe, daneben Farbe und Schneiden */
 /* In Spalten steht Leeren neben Rückgängig und braucht denselben Abstand nach oben */
 html.big #dClear { margin-top: var(--grp, 16px); }
-/* In Spalten stehen Lot und Waage in einer Reihe. Farbe rückt dafür vor das Lot, neben Winkel. */
-html.big [data-tool="plumb"], html.big [data-tool="level"] { order: 1; }
+/* In Spalten stehen Lot und Waage in einer Reihe */
 html.big [data-tool="plumb"] { grid-column-start: 1; }
-html.big #dCut, html.big #dGrid, html.big #dStrobe, html.big #dUndo, html.big #dClear, html.big #dSave { order: 2; }
 /* Beim Schneiden und bei der Bildfolge kommt unten eine Leiste dazu, dann werden die Werkzeuge flacher */
 #aPlayer:has(#pRange:not(.hidden)) .tl { min-height: 40px; }
 #pTools { scrollbar-width: none; }
@@ -894,11 +892,9 @@ html.tvfit #out { object-fit: fill; }
 /* Werkzeuge im niedrigen Rahmen: zwei Spalten, bei 150 % drei */
 @container app (max-height: 760px) {
   #pTools { width: 178px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; --grp: 8px; }
-  #dUndo, #dSave, #dCut { grid-column-start: 1; }
+  #dUndo, #dSave, #dGrid { grid-column-start: 1; }
   #dClear { margin-top: var(--grp, 16px); }
-  [data-tool="plumb"], [data-tool="level"] { order: 1; }
   [data-tool="plumb"] { grid-column-start: 1; }
-  #dCut, #dGrid, #dStrobe, #dUndo, #dClear, #dSave { order: 2; }
   html[data-size="2"] .tl { min-height: 42px; }
   html[data-size="3"] #pTools { width: 260px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   html[data-size="3"] .tl { min-height: 40px; }

@@ -95,6 +95,7 @@ const TR_ROWS = [
   ['Lot', 'Plumb', 'Plomada', 'Prumo', 'Aplomb', 'Piombo'],
   ['Waage', 'Level', 'Nivel', 'Nível', 'Niveau', 'Livella'],
   ['Bogen', 'Arc', 'Arco', 'Arco', 'Arc', 'Arco'],
+  ['Kreis', 'Circle', 'Círculo', 'Círculo', 'Cercle', 'Cerchio'],
   ['Raster', 'Grid', 'Cuadrícula', 'Grade', 'Grille', 'Griglia'],
   ['Bewegungsanalyse', 'Motion Analysis', 'Análisis del movimiento', 'Análise de movimento', 'Analyse du mouvement', 'Analisi del movimento'],
   ['Filter zurücksetzen', 'Reset filters', 'Restablecer filtros', 'Repor filtros', 'Réinitialiser les filtres', 'Azzera filtri'],
