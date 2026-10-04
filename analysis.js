@@ -955,10 +955,17 @@ function clipNeighbor(dir) {
   return i < 0 ? null : list[i + dir] || null;
 }
 
-// Bei Bildern genauso in der Reihenfolge der Liste „Bilder“, auch wenn das Bild über „Video | Bilder“ geöffnet wurde
+// Aus der Liste „Bilder“ geöffnet gehen die Pfeile durch alle Bilder der Liste, mit deren Filter.
+// Über „Video | Bilder“ geöffnet bleiben sie bei den Bildern dieses Videos und laufen im Kreis, nach dem letzten kommt das erste.
 const imagesOf = clipId => listImages.filter(im => im.clipId === clipId).sort((a, b) => a.n - b.n);
 function imageNeighbor(dir) {
   if (!pimg) return null;
+  if (pimg.scope !== 'list' && !isCmp(pimg.rec)) {
+    const own = imagesOf(pimg.clip.id);
+    const i = own.findIndex(im => im.id === pimg.rec.id);
+    if (i < 0 || own.length < 2) return null;
+    return own[(i + dir + own.length) % own.length];
+  }
   const list = listImageItems(pimg.rec.id).map(x => x.im);
   const i = list.findIndex(im => im.id === pimg.rec.id);
   return i < 0 ? null : list[i + dir] || null;
