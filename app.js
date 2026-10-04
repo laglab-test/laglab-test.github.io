@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '100';   // Stand der Test-App
+const APP_VERSION = '101';   // Stand der Test-App
 const STORE_KEY = 'lagcam.test.settings';
 const MAIN_STORE_KEY = 'turmdelay.settings.v1';   // Einstellungen der normalen App
 const KEY_INTERVAL_MS = 1000;      // Keyframe etwa jede Sekunde
@@ -506,12 +506,13 @@ function showT(now) {
 }
 
 function toggleSlow() {
-  if (slow) { stopSlow(); return; }
+  if (slow) { confirmPress($('slowBtn')); stopSlow(); return; }
   const now = performance.now();
   if (opStart === null || now - opStart < settings.delay * 1000) {
     showToast(tr('Puffer füllt sich noch'), true);
     return;
   }
+  confirmPress($('slowBtn'));
   // Ab dem Bild auf dem Fernseher. Direkt nach einem Sprung gilt die Stelle der normalen Verzögerung.
   slow = { wall: now, ts: lastShownTs || showT(now), end: now };
   renderSlow();
@@ -811,11 +812,11 @@ async function saveNow() {
   }
   const snap = snapshotBuffer();
   if (!snap) { showToast(tr('Nichts zu speichern'), true); return; }
+  confirmPress(saveBtn);   // statt der Meldung „Gespeichert“
   const p = saveClip(snap);
   setRecent(p);
   try {
-    const c = await p;
-    showToast(tr('Gespeichert · {0}', clipLabel(c)));
+    await p;
     // Die 5 Sekunden zählen ab dem fertigen Speichern
     if (recent && recent.p === p) recent.timer = setTimeout(clearRecent, RECENT_MS);
   } catch (e) {
@@ -823,6 +824,18 @@ async function saveNow() {
     clearRecent();
     showToast(tr('Speichern fehlgeschlagen'), true);
   }
+}
+
+// Rückmeldung, wenn ein Knopf lang genug gehalten wurde: ein kurzer Impuls und ein Aufleuchten in hellerer Akzentfarbe.
+// Hat das Gerät keinen Vibrationsmotor, bleibt das Aufleuchten. In der Android-App vibriert Android selbst.
+const BUZZ_MS = 40, FLASH_MS = 350;
+function confirmPress(btn) {
+  try { if (native) native.buzz(BUZZ_MS); else if (navigator.vibrate) navigator.vibrate(BUZZ_MS); } catch (e) {}
+  btn.classList.remove('flash');
+  void btn.getBoundingClientRect();
+  btn.classList.add('flash');
+  clearTimeout(btn.flashTimer);
+  btn.flashTimer = setTimeout(() => btn.classList.remove('flash'), FLASH_MS);
 }
 
 // Nach dem Speichern bleibt der Knopf kurz grau. Ein Tippen in dieser Zeit öffnet das Video.

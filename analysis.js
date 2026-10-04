@@ -417,6 +417,7 @@ function fillMonths(sel, clips) {
   }
   sel.value = f.month;
   sel.disabled = !count.size;
+  syncDd(sel);
 }
 
 function fillSelect(sel, label, values, current) {
@@ -425,7 +426,78 @@ function fillSelect(sel, label, values, current) {
   for (const v of values) sel.append(new Option(v, v));
   sel.value = current;
   sel.disabled = !values.length;
+  syncDd(sel);
 }
+
+// ---------- Eigene Auswahllisten ----------
+// Android zeichnet die Liste eines <select> selbst und immer weiß. Die Filter zeigen deshalb einen Knopf und eine
+// eigene Liste im Grau der App. Das <select> bleibt unsichtbar als Ablage der Werte und meldet „change“ wie bisher.
+const ddPop = el('div', 'ddPop hidden');
+ddPop.setAttribute('role', 'listbox');
+let ddOpen = null;
+
+function makeDd(sel) {
+  const b = el('button', 'dd');
+  b.type = 'button';
+  b.setAttribute('aria-haspopup', 'listbox');
+  sel.classList.add('ddSrc');
+  sel.after(b);
+  sel.dd = b;
+  b.addEventListener('click', () => (ddOpen === sel ? closeDd() : openDd(sel)));
+}
+
+function syncDd(sel) {
+  const b = sel.dd;
+  if (!b) return;
+  const o = sel.selectedOptions[0];
+  b.textContent = o ? o.textContent : '';
+  b.disabled = sel.disabled;
+  b.setAttribute('aria-label', tr(sel.getAttribute('aria-label') || ''));
+  if (ddOpen === sel) closeDd();
+}
+
+function ddItem(sel, o) {
+  const b = el('button', 'ddItem' + (o.value === sel.value ? ' on' : ''), o.textContent);
+  b.type = 'button';
+  b.setAttribute('role', 'option');
+  b.addEventListener('click', () => {
+    closeDd();
+    if (sel.value === o.value) return;
+    sel.value = o.value;
+    sel.dispatchEvent(new Event('change'));
+  });
+  return b;
+}
+
+// Die Liste öffnet direkt unter dem Knopf, mit Überschriften für Gruppen wie die Jahre bei „Zeit“
+function openDd(sel) {
+  closeDd();
+  ddPop.textContent = '';
+  for (const n of sel.children) {
+    if (n.tagName === 'OPTGROUP') {
+      ddPop.append(el('div', 'ddGroup', n.label));
+      for (const o of n.children) ddPop.append(ddItem(sel, o));
+    } else ddPop.append(ddItem(sel, n));
+  }
+  const b = sel.dd;
+  b.parentElement.append(ddPop);
+  Object.assign(ddPop.style, { left: b.offsetLeft + 'px', top: b.offsetTop + b.offsetHeight + 6 + 'px', minWidth: b.offsetWidth + 'px' });
+  ddPop.classList.remove('hidden');
+  b.classList.add('open');
+  ddOpen = sel;
+  const on = ddPop.querySelector('.on');
+  if (on) ddPop.scrollTop = on.offsetTop - ddPop.clientHeight / 2;
+}
+
+function closeDd() {
+  if (!ddOpen) return;
+  ddPop.classList.add('hidden');
+  ddOpen.dd.classList.remove('open');
+  ddOpen = null;
+}
+// Ein Tippen daneben schließt die Liste
+document.addEventListener('pointerdown', e => { if (ddOpen && !e.target.closest('.ddPop, .dd')) closeDd(); }, true);
+for (const id of ['fName', 'fProp', 'fMonth']) makeDd($(id));
 
 const sortedValues = (clips, key) => [...new Set(clips.map(c => c[key]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'de'));
 

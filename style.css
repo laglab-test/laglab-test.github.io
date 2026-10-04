@@ -972,3 +972,39 @@ html.tvfit #out { object-fit: fill; }
 #helpBody dt i svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 #helpBody dt i .dot { width: 18px; height: 18px; border-radius: 50%; background: #ffd21f; }
 #helpBody dt i[data-ico="#pPlay .i-play"] svg, #helpBody dt i[data-ico="#pPrev"] svg, #helpBody dt i[data-ico="#pNext"] svg { fill: currentColor; stroke: none; }
+
+/* Lang genug gehalten: Ring und Fläche leuchten kurz in hellerer Akzentfarbe auf und blenden dann aus */
+#saveBtn, #slowBtn { --flash: color-mix(in srgb, var(--acc) 60%, #fff); }
+#saveBtn.flash, #slowBtn.flash { transform: scale(4.2); }   /* bleibt groß wie beim Halten, schrumpft danach */
+#saveBtn.flash .track, #slowBtn.flash .track { fill: var(--flash); stroke: var(--flash); transition: none; }
+#saveBtn.flash .prog, #slowBtn.flash .prog { stroke: var(--flash); stroke-dashoffset: 0; transition: none; }
+#saveBtn .track, #slowBtn .track { transition: fill .3s, stroke .3s; }
+
+/* ---------- Eigene Auswahllisten der Filter ---------- */
+/* Android zeichnet die Liste eines select selbst und immer weiß. Das select bleibt unsichtbar als Ablage der Werte. */
+.ddSrc { display: none !important; }
+.filters { position: relative; }
+.dd {
+  position: relative; min-height: 44px; max-width: 240px; padding: 0 34px 0 14px; border-radius: 22px;
+  border: 1px solid var(--line-2); background: var(--surface); color: var(--fg);
+  font: 600 15px var(--sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dd::after {
+  content: ""; position: absolute; right: 15px; top: 50%; width: 7px; height: 7px; margin-top: -6px;
+  border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); opacity: 0.8;
+}
+.dd.open { border-color: var(--acc); }
+.dd.open::after { transform: rotate(225deg); margin-top: -2px; }
+.dd:disabled { opacity: 0.4; }
+.ddPop {
+  position: absolute; z-index: 15; max-height: 380px; overflow-y: auto; padding: 6px;
+  background: var(--surface); border: 1px solid var(--line-2); border-radius: 12px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+}
+.ddItem {
+  display: block; width: 100%; min-height: 44px; padding: 0 14px; border-radius: 8px; text-align: left;
+  color: var(--fg); font: 500 15px var(--sans); white-space: nowrap;
+}
+.ddItem:active { background: var(--tint); }
+.ddItem.on { background: color-mix(in srgb, var(--acc) 16%, transparent); box-shadow: inset 0 0 0 1.5px var(--acc-text); font-weight: 650; }
+.ddGroup { padding: 10px 14px 4px; font: 12px var(--mono); letter-spacing: 0.08em; color: var(--mut); }

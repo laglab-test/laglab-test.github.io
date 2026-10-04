@@ -1,7 +1,7 @@
 // Bei jeder neuen Version VERSION erhöhen. Die neue Version wird beim nächsten App-Start übernommen.
 // Test-App, laglab-test.github.io. Nur eigene Speicher werden gelöscht.
 const PREFIX = 'lagcam-test-';
-const VERSION = PREFIX + 's100';   // Zählung seit Stand 1 vom 01.10.2026, weiter mit s2, s3 und so fort
+const VERSION = PREFIX + 's101';   // Zählung seit Stand 1 vom 01.10.2026, weiter mit s2, s3 und so fort
 const FILES = ['./', 'index.html', 'i18n.js', 'native.js', 'app.js', 'analysis.js', 'draw.js', 'compare.js', 'help.js', 'style.css', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png',
   'hilfe/live.jpg', 'hilfe/betrieb.jpg', 'hilfe/analyse.jpg', 'hilfe/player.jpg', 'hilfe/vergleich.jpg', 'hilfe/einstellungen.jpg'];
 
