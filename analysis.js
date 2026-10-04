@@ -1079,6 +1079,7 @@ document.addEventListener('click', e => {
 // Zurück-Taste und Zurück-Geste von Android. Wiedergabe führt zur Liste, Liste zu Live.
 // Im Betrieb bleibt sie wirkungslos, damit ein versehentliches Wischen den Betrieb nicht beendet.
 window.addEventListener('popstate', () => {
+  if (helpOpen()) { closeHelp(); return; }   // aus der Hilfe zurück in die Einstellungen
   if (!$('tvCal').classList.contains('hidden')) { closeTvCal(); return; }   // zuerst Bildschirm anpassen, zurück in die Einstellungen
   if (!$('uiDlg').classList.contains('hidden')) {
     // Aus Farbwähler und Löschen zuerst zurück in die Einstellungen, erst dann zu

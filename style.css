@@ -23,7 +23,8 @@
 /* Hellmodus für Einstellungen, Analyse und das Fenster Darstellung. Der Betrieb bleibt dunkel. */
 html[data-theme="light"] #settings,
 html[data-theme="light"] #analysis,
-html[data-theme="light"] #uiDlg {
+html[data-theme="light"] #uiDlg,
+html[data-theme="light"] #help {
   --bg: #f2f4f6;
   --surface: #ffffff;
   --line: #dde2e7;
@@ -44,7 +45,8 @@ html[data-theme="light"] body { background: #f2f4f6; }
 /* Mittlerer Modus: graublau zwischen Hell und Dunkel, Schrift weiß. Der Betrieb bleibt dunkel. */
 html[data-theme="mid"] #settings,
 html[data-theme="mid"] #analysis,
-html[data-theme="mid"] #uiDlg {
+html[data-theme="mid"] #uiDlg,
+html[data-theme="mid"] #help {
   --bg: #3a434d;
   --surface: #46505b;
   --line: #535e6a;
@@ -60,7 +62,7 @@ html[data-theme="mid"] #uiDlg {
   --acc-text: color-mix(in srgb, var(--acc) 70%, #fff);
 }
 html[data-theme="mid"] body { background: #3a434d; }
-#settings, #analysis, #uiDlg { color: var(--fg); }
+#settings, #analysis, #uiDlg, #help { color: var(--fg); }
 * { box-sizing: border-box; }
 html, body {
   margin: 0; height: 100%; overflow: hidden;
@@ -921,3 +923,52 @@ html.tvfit #out { object-fit: fill; }
 #uiMain .seg { height: 46px; }
 #uiMain .seg button { min-height: 0; }
 #uiMain .step.xs { width: 46px; height: 46px; flex-basis: 46px; }
+
+/* ---------- Hilfe ---------- */
+/* Das „i“ rechts neben der Überschrift der Einstellungen, klein und rund wie das × im Filter */
+.dlgHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#uiHelp { width: 36px; min-height: 36px; height: 36px; padding: 0; border-radius: 50%; font: italic 700 17px Georgia, serif; }
+/* Großes Fenster über fast den ganzen Bildschirm, links das Verzeichnis, rechts der Text */
+#help {
+  position: fixed; inset: 0; z-index: 30;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+}
+.helpWin {
+  zoom: var(--z);
+  display: grid; grid-template-columns: 210px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr);
+  background: var(--surface); color: var(--fg);
+  border: 1px solid var(--line-2); border-radius: 14px; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+/* Mit zoom wächst auch das Fenster, deshalb wird seine Größe durch --z geteilt */
+.helpWin { width: calc(min(1120px, 96cqw) / var(--z)); height: calc(94cqh / var(--z)); }
+.helpHead {
+  grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px 12px 22px; border-bottom: 1px solid var(--line);
+}
+.helpHead h2 { margin: 0; font-size: 18px; font-weight: 650; }
+#helpClose { width: 44px; padding: 0; display: grid; place-items: center; }
+#helpClose svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+#helpNav { display: flex; flex-direction: column; gap: 2px; padding: 12px 10px; border-right: 1px solid var(--line); overflow-y: auto; }
+#helpNav button { text-align: left; padding: 9px 10px; border-radius: 8px; color: var(--mut); font-size: 15px; }
+#helpNav button.on { background: color-mix(in srgb, var(--acc) 16%, transparent); color: var(--fg); font-weight: 650; }
+#helpNav .no, #helpBody h3 .no { font: 12px var(--mono); color: var(--acc-text); margin-right: 8px; }
+#helpBody { overflow-y: auto; padding: 8px 28px 40px; font-size: 16px; line-height: 1.5; }
+#helpBody section { max-width: 760px; padding-top: 14px; }
+#helpBody section + section { margin-top: 18px; border-top: 1px solid var(--line); }
+#helpBody h3 { margin: 6px 0 8px; font-size: 19px; font-weight: 650; }
+#helpBody p { margin: 0 0 10px; }
+#helpBody ul, #helpBody ol { margin: 0 0 10px; padding-left: 22px; }
+#helpBody li { margin-bottom: 4px; }
+#helpBody dl { margin: 4px 0 12px; display: grid; grid-template-columns: minmax(140px, max-content) minmax(0, 1fr); gap: 8px 18px; }
+#helpBody dt { font-weight: 650; display: flex; align-items: flex-start; gap: 6px; }
+#helpBody dd { margin: 0; color: var(--fg); }
+#helpBody figure { margin: 8px 0 14px; }
+#helpBody img { display: block; width: 100%; height: auto; max-width: 640px; border-radius: 8px; border: 1px solid var(--line-2); }
+#helpBody figcaption { margin-top: 6px; font-size: 14px; color: var(--mut); }
+/* Symbole aus der App neben dem Begriff */
+#helpBody dt i { flex: 0 0 auto; display: inline-grid; place-items: center; width: 26px; height: 24px; color: var(--mut); }
+#helpBody dt i svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#helpBody dt i .dot { width: 18px; height: 18px; border-radius: 50%; background: #ffd21f; }
+#helpBody dt i[data-ico="#pPlay .i-play"] svg, #helpBody dt i[data-ico="#pPrev"] svg, #helpBody dt i[data-ico="#pNext"] svg { fill: currentColor; stroke: none; }
