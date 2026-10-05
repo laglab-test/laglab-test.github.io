@@ -40,7 +40,7 @@ const HELP_HTML = `
   <h3><span class="no">04</span>Analyse</h3>
   <dl>
     <dt>Videos | Bilder</dt><dd>Wechselt zwischen gespeicherten Videos und Bildern</dd>
-    <dt>Tage</dt><dd>Ansicht nach Tagen, Wochen, Monaten oder Jahren</dd>
+    <dt>Tage</dt><dd>Ansicht nach Tagen, Wochen oder Monaten</dd>
     <dt>Kachel</dt><dd>Tippen führt eine Stufe tiefer, unter Tage öffnet es Video oder Bild</dd>
     <dt><span class="hStar on">★</span></dt><dd>Nur Einträge mit Stern anzeigen</dd>
     <dt>Name, Stichwort</dt><dd>Nur Einträge mit diesem Namen oder Stichwort anzeigen</dd>

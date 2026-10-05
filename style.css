@@ -1033,7 +1033,3 @@ html.tvfit #out { object-fit: fill; }
 #aGrid[data-view="month"] .card .info, #aGrid[data-view="month"] .card .dur, #aGrid[data-view="month"] .card .imgs { display: none; }
 #aGrid[data-view="month"] .card .thStar { display: block; }
 #aGrid[data-view="month"] .card .selNo { left: 4px; top: 4px; width: 24px; height: 24px; font-size: 14px; }
-/* Jahre: eine Kachel je Monat mit Anzahl */
-#aGrid[data-view="year"] .cards { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
-.mTile .info { padding: 8px 12px; }
-.mTile .info b { font-size: 15px; }
