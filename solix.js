@@ -53,6 +53,7 @@
     negotiate: 'Verbindung wird eingerichtet …',
     ok: 'Verbunden',
     lost: 'Verbindung unterbrochen, verbinde neu …',
+    failed: 'Keine Verbindung. „Verbinden …“ versucht es erneut.',
   };
 
   let state = 'none';
@@ -60,7 +61,7 @@
   function note(s) {
     const t = new Date().toLocaleTimeString('de-DE');
     log.push(t + '  ' + s);
-    if (log.length > 60) log.shift();
+    if (log.length > 200) log.shift();
     $('sxLog').textContent = log.join('\n');
   }
 
