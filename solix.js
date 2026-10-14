@@ -2,7 +2,8 @@
 
 // ---------- Powerstation Anker SOLIX, nur in der Vereinsfassung ----------
 // Die Android-Hülle meldet beim Start, welche Zusätze sie kann. Nur dann lädt native.js diese Datei.
-// Sie baut den Abschnitt „06 Powerstation“ selbst auf. Die übrigen Dateien der App wissen nichts davon,
+// Sie baut den Abschnitt „06 Powerstation“, den Akkustand oben links im Betrieb und zwei Zeilen der Hilfe selbst auf.
+// Die übrigen Dateien der App wissen nichts davon,
 // so bleibt die kommerzielle Fassung ohne diesen Teil.
 // Machbarkeitstest: „Bericht …“ zeigt Zustand, Verbindung, Aushandeln, Werte und die letzten Ereignisse
 // auf einem Bildschirm, damit ein Foto genügt.
@@ -36,6 +37,13 @@
     #sxRep .ok { color: var(--good, #4fc97a); }
     #sxRep .err { color: var(--bad); }
     #sxRep .dim { color: var(--mut); }
+    /* Akkustand im Betrieb oben links, im Stil der Sekunden oben rechts. Der Betrieb ist immer dunkel, daher das helle Grün. */
+    #sxBadge { position: absolute; top: 3cqh; left: 2.5cqw; pointer-events: none; color: #4fc97a;
+      font: 400 4.5cqh/1.1 var(--sans); font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+      -webkit-text-stroke: 0.55cqh rgba(0, 0, 0, 0.6); paint-order: stroke fill; text-shadow: 0 0 0.5cqh rgba(0, 0, 0, 0.35); }
+    #sxBadge.mid { color: var(--warn); }
+    #sxBadge.low { color: var(--bad); }
+    #sxBadge:empty { display: none; }
     /* Eine Reihe mehr in der rechten Spalte, Start bleibt ganz unten */
     #panel:has(#solixGrp) { grid-template-rows: auto auto auto auto 1fr; }
   `;
@@ -55,6 +63,28 @@
     <div class="sxState"><span id="sxMsg"></span><button class="tool" id="sxFind">Verbinden …</button></div>
     <button class="tool" id="sxRepOpen">Bericht …</button>`;
   $('panel').insertBefore(grp, $('panel').querySelector('.actions'));
+
+  const badge = document.createElement('div');
+  badge.id = 'sxBadge';
+  $('stage').append(badge);
+
+  // Zwei Zeilen in der Hilfe. Sie wird beim ersten Öffnen gefüllt, die Zeilen kommen danach dazu.
+  $('uiHelp').addEventListener('click', () => {
+    if ($('sxHelp')) return;
+    const add = (sec, before, dt, dd, id) => {
+      const dl = document.querySelector(`#${sec} dl`);
+      if (!dl) return;
+      const t = document.createElement('dt'), d = document.createElement('dd');
+      if (id) t.id = id;
+      t.innerHTML = dt;
+      d.textContent = dd;
+      const ref = [...dl.children].find(x => x.tagName === 'DT' && x.textContent === before);
+      dl.insertBefore(t, ref || null);
+      dl.insertBefore(d, ref || null);
+    };
+    add('h-live', 'Start', '06 Powerstation', 'Werte der Anker-Powerstation. „Verbinden …“ sucht sie beim ersten Mal', 'sxHelp');
+    add('h-run', 'Bild', '<span style="color:#4fc97a">78 %</span>', 'Akkustand der Powerstation oben links. Grün ab 50 %, gelb ab 20 %, sonst rot');
+  });
 
   // Bericht über den ganzen Bildschirm, außerhalb von #app, damit er auch bei „Bildschirm anpassen“ alles zeigt
   const rep = document.createElement('div');
@@ -155,6 +185,7 @@
   // Verbunden stehen nur die Werte da, sonst nur Zustand und Knopf. So bleibt der Abschnitt kurz.
   function renderState(s, msg) {
     state = s;
+    if (s !== 'ok') badge.textContent = '';   // ohne Verbindung keine Anzeige im Betrieb
     $('sxMsg').textContent = msg || TEXT[s] || s;
     $('sxFind').disabled = s === 'search';
     grp.querySelector('.sxRows').classList.toggle('hidden', s !== 'ok');
@@ -169,6 +200,8 @@
     if (v.bat != null) {
       $('sxBat').textContent = v.bat + ' %';
       $('sxBat').className = v.bat >= 50 ? 'good' : v.bat >= 20 ? 'mid' : 'low';
+      badge.textContent = v.bat + ' %';
+      badge.className = $('sxBat').className;
     }
     if (v.min != null) {
       const charging = v.chg === 2;   // beim Laden meldet die Powerstation die Zeit bis voll
