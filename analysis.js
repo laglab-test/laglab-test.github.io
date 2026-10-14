@@ -532,12 +532,14 @@ function groupKeyOf(day) {
 function groupLabel(key) {
   const now = new Date(), today = dayKey(now);
   const dm = d => `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.`;
+  // Die Jahreszahl steht nur bei Einträgen aus einem früheren Jahr, sonst bleiben die Überschriften kurz
+  const yr = d => (d.getFullYear() !== now.getFullYear() ? String(d.getFullYear()) : '');
   const ago = (y, m, d) => dayKey(new Date(now.getFullYear() + y, now.getMonth() + m, now.getDate() + d));
   if (listView === 'day') {
     if (key === today) return tr('Heute');
     if (key === ago(0, 0, -1)) return tr('Gestern');
     const d = dayDate(key);
-    return d.toLocaleDateString(LOCALE[lang], { weekday: 'long' }) + ', ' + dm(d);
+    return d.toLocaleDateString(LOCALE[lang], { weekday: 'long' }) + ', ' + dm(d) + yr(d);
   }
   if (listView === 'week') {
     const thisWeek = dayKey(weekStart(today));
@@ -546,7 +548,7 @@ function groupLabel(key) {
     if (key === dayKey(last)) return tr('Letzte Woche');
     const a = dayDate(key), b = dayDate(key); b.setDate(b.getDate() + 6);
     const range = a.getMonth() === b.getMonth() ? `${pad2(a.getDate())}.–${dm(b)}` : `${dm(a)}–${dm(b)}`;
-    return tr('KW {0}', isoWeek(a)) + ' · ' + range;
+    return tr('KW {0}', isoWeek(a)) + ' · ' + range + yr(b);
   }
   if (key === today.slice(0, 7)) return tr('Dieser Monat');
   if (key === ago(0, -1, 1 - now.getDate()).slice(0, 7)) return tr('Letzter Monat');
@@ -1594,7 +1596,9 @@ for (const [id, isA] of [['hA', true], ['hB', false]]) {
   h.addEventListener('pointermove', e => {
     if (drag !== e.pointerId) return;
     const r = $('pSeek').getBoundingClientRect();
-    const f = clamp((e.clientX - r.left - 13) / (r.width - 26), 0, 1);
+    // Der Reglerknopf ist 26 px breit und wächst mit der Größe der Bedienung
+    const half = 13 * (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--z')) || 1);
+    const f = clamp((e.clientX - r.left - half) / (r.width - 2 * half), 0, 1);
     moveTo(Math.round(pFirst + f * (pCount() - 1 - pFirst)));
   });
   for (const type of ['pointerup', 'pointercancel']) h.addEventListener(type, e => { if (drag === e.pointerId) drag = null; });
