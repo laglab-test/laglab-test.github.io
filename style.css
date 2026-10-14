@@ -210,6 +210,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 #panel {
   display: flex; flex-direction: column; gap: 14px;
   min-height: 0; overflow-y: auto; padding-right: 2px;
+  /* Platz für den Ring um den Reglerknopf am linken Ende, der Inhalt bleibt an seiner Stelle */
+  padding-left: 12px; margin-left: -12px;
 }
 .grp { padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .row { display: flex; align-items: center; gap: 14px; min-height: 52px; }
