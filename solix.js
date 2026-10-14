@@ -8,7 +8,7 @@
 (() => {
   const style = document.createElement('style');
   style.textContent = `
-    #solixGrp { --good: #4fc97a; margin-top: 6px; border-bottom: none; }   /* darunter folgt nur Start, keine Linie */
+    #solixGrp { --good: #4fc97a; border-bottom: none; }   /* darunter folgt nur Start, keine Linie */
     html[data-theme="light"] #solixGrp { --good: #1f8a4c; }
     /* Zeilen wie in einer Tabelle, mit dünnen Linien dazwischen. Die Werte stehen rechts. */
     .sxRows { display: grid; grid-template-columns: 1fr auto; column-gap: 14px; margin: 0 0 2px; }
@@ -29,8 +29,10 @@
     #sxBadge.mid { color: var(--warn); }
     #sxBadge.low { color: var(--bad); }
     #sxBadge:empty { display: none; }
-    /* Eine Reihe mehr in der rechten Spalte, Start bleibt ganz unten */
+    /* Eine Reihe mehr in der rechten Spalte, Start bleibt ganz unten. Ab Stufe 1 mit Abstandszeile wie in style.css. */
     #panel:has(#solixGrp) { grid-template-rows: auto auto auto auto 1fr; }
+    html.big #panel:has(#solixGrp) { grid-template-rows: auto var(--sp) auto var(--sp) auto var(--sp) auto 1fr; }
+    html.big #solixGrp { grid-row: 7; }
   `;
   document.head.append(style);
 

@@ -819,9 +819,17 @@ html.big [data-tool="plumb"] { grid-column-start: 1; }
 .sizeTicks i { width: 8px; height: 8px; margin: -4px -4px 0; border-radius: 50%; background: var(--line-2); }
 .sizeTicks i.done { background: var(--acc); }
 .sizeTicks i.cur { visibility: hidden; }
-/* Start sitzt in jeder Größe ganz unten in der Spalte */
-html.big #panel { grid-template-rows: auto auto auto 1fr; align-content: stretch; }
-html.big #panel .actions { align-self: end; }
+/* Start sitzt in jeder Größe ganz unten in der Spalte.
+   Ab Stufe 1 verteilt sich freier Platz auf die Abstände zwischen den Abschnitten, je höchstens 30 px. Dafür liegen
+   zwischen den Abschnitten eigene Zeilen (--sp). Wird es eng, schrumpfen sie bis auf --sp-min, der Rest bleibt über Start. */
+html.big #panel {
+  --sp: minmax(var(--sp-min, 10px), 30px);
+  grid-template-rows: auto var(--sp) auto var(--sp) auto 1fr; row-gap: 0; align-content: stretch;
+}
+html.big #panel > .grp:nth-child(1) { grid-row: 1; }
+html.big #panel > .grp:nth-child(2) { grid-row: 3; }
+html.big #expGrp, html.big #focusGrp { grid-row: 5; }
+html.big #panel .actions { grid-row: -2 / -1; align-self: end; margin-top: var(--sp-min, 10px); }
 
 /* ---------- Fernseher anpassen ---------- */
 /* Bildschirm und Zeitlupe teilen sich eine Zeile, die Zeitlupe nur so breit wie ihre drei Knöpfe */
@@ -862,7 +870,7 @@ html.tvfit #out { object-fit: fill; }
    Bei „Fernseher angepasst“ ist die App weniger hoch als das Tablet. Dann rückt alles enger zusammen,
    Belichtung und Fokus stehen nebeneinander, Modus und Größe ebenso. */
 @container app (max-height: 760px) {
-  #panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto auto 1fr; gap: 6px 16px; align-content: stretch; }
+  #panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto auto 1fr; gap: 6px 16px; align-content: stretch; --sp-min: 6px; }
   #panel > :not(#expGrp):not(#focusGrp) { grid-column: 1 / -1; }
   #panel .row { gap: 10px; min-height: 44px; }
   #panel .actions { align-self: end; }
