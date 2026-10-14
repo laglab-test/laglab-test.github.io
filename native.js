@@ -185,6 +185,24 @@ const native = (() => {
     return done;
   }
 
+  // ----- Zusätze, die nur manche Fassungen der Android-App haben, etwa die Powerstation des Vereins -----
+  // Die Hülle nennt sie beim Start. Jeder Zusatz hat eine eigene Datei, etwa solix.js, die erst dann geladen wird.
+  // Nachrichten für einen Zusatz kommen als Ereignis 'laglab-native' an.
+
+  function loadAddons(list) {
+    const load = () => {
+      for (const name of list || []) {
+        if (!/^[a-z]+$/.test(name) || document.querySelector(`script[data-addon="${name}"]`)) continue;
+        const s = document.createElement('script');
+        s.src = name + '.js';
+        s.dataset.addon = name;
+        document.body.append(s);
+      }
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load);
+    else load();
+  }
+
   bridge.onmessage = e => {
     const d = e.data;
     if (d instanceof ArrayBuffer) return onChunk(d);
@@ -195,11 +213,13 @@ const native = (() => {
     if (m.t === 'cam') onState(m);
     else if (m.t === 'caps' && usb) usb.ctl = m;
     else if (m.t === 'saved' && saveDone) { saveDone(m.ok); saveDone = null; }
+    else if (m.t === 'addons') loadAddons(m.list);
+    else window.dispatchEvent(new CustomEvent('laglab-native', { detail: m }));
   };
   send({ t: 'hello' });
 
   // Kurzer Impuls des Vibrationsmotors, falls das Gerät einen hat
   const buzz = ms => send({ t: 'buzz', ms });
 
-  return { usbStream, save, buzz };
+  return { usbStream, save, buzz, send };
 })();
