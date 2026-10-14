@@ -758,7 +758,6 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
 :root { --z: 1; }
 html[data-size="1"] { --z: 1.1667; }
 html[data-size="2"] { --z: 1.3333; }
-html[data-size="3"] { --z: 1.5; }
 .bar, .filters, .delay, #panel, .dlg, #aGrid, #aEmpty, .pbar, .pctl, #pRange, #pTools,
 .clipNav, #pMsg, #pStill, #camMsg, .hud { zoom: var(--z); }
 #settings { grid-template-columns: minmax(0, 1fr) calc(clamp(360px, 32cqw, 460px) * var(--z)); }
@@ -773,7 +772,6 @@ html.big #panel .row { gap: 10px; }
 /* Farbkreise wachsen mit der Stufe nicht über ihre normale Größe hinaus, sonst wird das Fenster zu hoch */
 .swatches { grid-template-columns: repeat(3, minmax(0, calc(64px / var(--z)))); justify-content: start; gap: 18px; }
 .dlg { max-height: calc((100cqh - 16px) / var(--z)); overflow-y: auto; }
-/* Ab der dritten Größe: Name und Stichwort in einer zweiten Zeile rechts, unter Stern, Herunterladen und Löschen */
 /* Bei „groß“ bleibt die Kopfzeile einzeilig. Die rechte Seite bekommt ihren Platz, der Titel links wird gekürzt. */
 html[data-size="2"] .pbar { grid-template-columns: minmax(min-content, 1fr) minmax(0, max-content); }
 html[data-size="2"] .pR #pName, html[data-size="2"] .pR #pProp { min-width: 80px; flex-basis: 140px; }
@@ -807,12 +805,6 @@ html.big [data-tool="plumb"] { grid-column-start: 1; }
 }
 #pSuggest button:active { background: #e6e9ec; }
 
-/* Bei 150 % werden Werkzeuge und Abstände etwas flacher, sonst reicht die Höhe nicht */
-html[data-size="3"] .tl { min-height: 42px; }
-html[data-size="3"] #pTools { --grp: 8px; }
-html[data-size="3"] #aPlayer:has(#pRange:not(.hidden)) .tl { min-height: 34px; }
-html[data-size="3"] .sv { aspect-ratio: 16 / 8; }
-
 /* Regler für die Größe mit drei Rastpunkten, darunter klein, mittel und groß. Ein Tippen auf ein Wort wählt die Stufe. */
 .sizeRow { display: flex; flex-direction: column; }
 .sizeNames { display: flex; justify-content: space-between; margin-top: -10px; }
@@ -825,8 +817,6 @@ html[data-size="3"] .sv { aspect-ratio: 16 / 8; }
 .sizeTicks i { width: 8px; height: 8px; margin: -4px -4px 0; border-radius: 50%; background: var(--line-2); }
 .sizeTicks i.done { background: var(--acc); }
 .sizeTicks i.cur { visibility: hidden; }
-html[data-size="3"] #panel { gap: 6px 16px; }
-html[data-size="3"] #panel .grp { padding-bottom: 6px; }
 /* Start sitzt in jeder Größe ganz unten in der Spalte */
 html.big #panel { grid-template-rows: auto auto auto 1fr; align-content: stretch; }
 html.big #panel .actions { align-self: end; }
@@ -853,8 +843,8 @@ html.tvcal #app::after {
 
 /* Modus und Größe stehen normal untereinander, ab Stufe 2 nebeneinander, damit das Fenster nicht rollen muss */
 .dlgPair, .dlgPair > div { display: contents; }
-html[data-size="2"] .dlgPair, html[data-size="3"] .dlgPair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
-html[data-size="2"] .dlgPair > div, html[data-size="3"] .dlgPair > div { display: flex; flex-direction: column; gap: 14px; }
+html[data-size="2"] .dlgPair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+html[data-size="2"] .dlgPair > div { display: flex; flex-direction: column; gap: 14px; }
 
 /* ---------- Rahmen der ganzen App ----------
    #app ist Bezugsfläche für alle fest positionierten Seiten und für die Maßeinheiten cqw und cqh.
@@ -883,35 +873,20 @@ html.tvfit #out { object-fit: fill; }
   .dlg { padding-top: 14px; padding-bottom: 14px; }
   .sv { aspect-ratio: 16 / 7; }
 }
-@container app (max-height: 760px) {
-  html[data-size="3"] #panel .row { min-height: 36px; }
-  html[data-size="3"] #panel .seg button { min-height: 36px; }
-  html[data-size="3"] #panel .grp { padding-bottom: 4px; }
-  html[data-size="3"] #panel .label { margin-bottom: 4px; }
-  html[data-size="3"] #uiMain, html[data-size="3"] #uiPick { gap: 7px; }
-  html[data-size="3"] .dlg .seg button, html[data-size="3"] .tvRow .tool { min-height: 40px; }
-  html[data-size="3"] .dlg .label { margin-top: 2px; }
-  html[data-size="3"] .sv { aspect-ratio: 16 / 6; }
-}
-/* Werkzeuge im niedrigen Rahmen: zwei Spalten, bei 150 % drei */
+/* Werkzeuge im niedrigen Rahmen: zwei Spalten, bei „groß“ drei */
 @container app (max-height: 760px) {
   #pTools { width: 178px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; --grp: 8px; }
   #dUndo, #dSave, #dGrid { grid-column-start: 1; }
   #dClear { margin-top: var(--grp, 16px); }
   [data-tool="plumb"] { grid-column-start: 1; }
   html[data-size="2"] .tl { min-height: 42px; }
-  html[data-size="3"] #pTools { width: 260px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  html[data-size="3"] .tl { min-height: 40px; }
 }
 @container app (max-height: 760px) {
-  html[data-size="2"] #pTools, html[data-size="3"] #pTools { width: 250px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; padding: 4px; }
-  html[data-size="2"] .tl, html[data-size="3"] .tl,
-  html[data-size="2"] #aPlayer:has(#pRange:not(.hidden)) .tl, html[data-size="3"] #aPlayer:has(#pRange:not(.hidden)) .tl { min-height: 36px; gap: 0; }
-  html[data-size="2"] .tl svg, html[data-size="3"] .tl svg { width: 22px; height: 22px; }
-  html[data-size="2"] #pTools, html[data-size="3"] #pTools { --grp: 4px; }
-}
-@container app (max-height: 760px) {
-  html[data-size="3"] #aPlayer:has(#pRange:not(.hidden)) .tl span { display: none; }
+  html[data-size="2"] #pTools { width: 250px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; padding: 4px; }
+  html[data-size="2"] .tl,
+  html[data-size="2"] #aPlayer:has(#pRange:not(.hidden)) .tl { min-height: 36px; gap: 0; }
+  html[data-size="2"] .tl svg { width: 22px; height: 22px; }
+  html[data-size="2"] #pTools { --grp: 4px; }
 }
 /* Ab „Groß“ teilen sich Name und Stichwort die zweite Zeile, auch wenn der Platz knapp ist */
 

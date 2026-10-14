@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '109';   // Stand der Test-App
+const APP_VERSION = '110';   // Stand der Test-App
 const STORE_KEY = 'lagcam.test.settings';
 const MAIN_STORE_KEY = 'turmdelay.settings.v1';   // Einstellungen der normalen App
 const KEY_INTERVAL_MS = 1000;      // Keyframe etwa jede Sekunde
@@ -30,7 +30,7 @@ const DEFAULTS = {
   slow: 0.5,             // Geschwindigkeit der Zeitlupe im Betrieb, 0.5, 0.25 oder 0.125
   loop: false,           // Videos und Vergleich beginnen am Ende von vorn
   cams: { environment: { ...DEFAULT_CAM }, user: { ...DEFAULT_CAM }, external: { ...DEFAULT_CAM } },
-  ui: { acc: '#8fb9ad', theme: 'mid', custom: '', size: 1 },   // size 0 bis 3 für 100, 117, 133 und 150 Prozent
+  ui: { acc: '#8fb9ad', theme: 'mid', custom: '', size: 1 },   // size 0 bis 2 für 100, 117 und 133 Prozent
   tv: { on: false, set: false, w: 100, h: 0, x: 0, y: 0 },   // Fläche für den Betrieb in Prozent des Bildschirms, h 0 heißt noch nicht angepasst
   keepDays: 7,           // Videos ohne Stern werden nach so vielen Tagen gelöscht, 1 bis 30, 0 bedeutet nie
 };
