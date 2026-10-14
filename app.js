@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '110';   // Stand der Test-App
+const APP_VERSION = '111';   // Stand der Test-App
 const STORE_KEY = 'lagcam.test.settings';
 const MAIN_STORE_KEY = 'turmdelay.settings.v1';   // Einstellungen der normalen App
 const KEY_INTERVAL_MS = 1000;      // Keyframe etwa jede Sekunde
@@ -97,7 +97,7 @@ let degraded = false;          // Kamera liefert weniger als eingestellt
 let overloadUntil = 0;
 
 let encoder = null, encW = 0, encH = 0, encConfig = null, forceKey = true, lastKeyAt = 0;
-let hwPref = 'prefer-hardware', encoderErrors = 0;
+let hwPref = 'prefer-hardware', encoderErrors = 0, decoderErrors = 0;
 let decoder = null, decoderConfigRef = null;
 
 let buffer = [];               // { seq, ts, key, chunk, config }
@@ -123,6 +123,11 @@ function withTimeout(p, ms) {
   let t;
   return Promise.race([p, new Promise((_, rej) => { t = setTimeout(() => rej(new Error('Zeitüberschreitung')), ms); })])
     .finally(() => clearTimeout(t));
+}
+
+// Gibt einen Encoder oder Decoder frei. Ein nur verworfener belegt sonst weiter einen der wenigen Hardware-Plätze.
+function closeCodec(c) {
+  try { if (c && c.state !== 'closed') c.close(); } catch (e) {}
 }
 
 // Kamerabefehl mit Zeitgrenze. Android liefert während der Umstellung kurz keine Bilder,
@@ -429,15 +434,17 @@ function onCameraFrame(f) {
 }
 
 function makeEncoder() {
-  encoder = new VideoEncoder({
+  const enc = new VideoEncoder({
     output: onEncoded,
     error: e => {
       console.warn(e);
+      if (encoder !== enc) return;   // ein schon ersetzter Encoder räumt den neuen nicht ab
       markOverload();
       encoder = null;
       if (++encoderErrors >= 2) hwPref = 'no-preference';
     },
   });
+  encoder = enc;
   encW = 0; encH = 0;
 }
 
@@ -465,6 +472,7 @@ function encodeFrame(f, now) {
     console.warn(e);
     try { f.close(); } catch (x) {}
     markOverload();
+    closeCodec(encoder);
     encoder = null;
   }
 }
@@ -482,16 +490,19 @@ function onEncoded(chunk, meta) {
 // ---------- Wiedergabe ----------
 
 function makeDecoder() {
-  decoder = new VideoDecoder({
+  const dec = new VideoDecoder({
     output: onDecoded,
     error: e => {
       console.warn(e);
+      if (decoder !== dec) return;   // ein schon ersetzter Decoder räumt den neuen nicht ab
       markOverload();
+      decoderErrors++;
       decoder = null;
       decoderConfigRef = null;
       feedSeq = null;
     },
   });
+  decoder = dec;
   decoderConfigRef = null;
 }
 
@@ -596,13 +607,16 @@ function feed(limit, T) {
     if (decoder.decodeQueueSize > 6) { markOverload(); break; }
     try {
       if (e.key && e.config && (e.config !== decoderConfigRef || decoder.state !== 'configured')) {
-        decoder.configure(e.config);
+        // Nach zwei Fehlern dekodiert der Betrieb in Software, etwa wenn kein Hardware-Decoder frei ist
+        decoder.configure(decoderErrors >= 2 ? { ...e.config, hardwareAcceleration: 'prefer-software' } : e.config);
         decoderConfigRef = e.config;
       }
       if (decoder.state === 'configured') decoder.decode(e.chunk);
     } catch (err) {
       console.warn(err);
       markOverload();
+      decoderErrors++;
+      closeCodec(decoder);
       decoder = null;
       feedSeq = null;
       return;
@@ -727,6 +741,8 @@ function enterSettings() {
   cancelSavePress();
   clearRecent();
   resetPlayback();
+  closeCodec(decoder);   // außerhalb des Betriebs braucht die Wiedergabe keinen Decoder
+  decoder = null;
   $('run').classList.add('hidden');
   $('settings').classList.remove('hidden');
   if (stream) showLive();

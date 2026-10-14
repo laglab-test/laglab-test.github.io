@@ -62,10 +62,15 @@ $('fCmpGo').addEventListener('click', async () => {
 // ---------- Öffnen und Schließen ----------
 
 async function openCompare(ids) {
+  const g = ++openGen;
+  openBusy = g;
   const metas = ids.map(clipById).filter(Boolean);
-  if (metas.length < 2) return;
+  if (metas.length < 2) return endOpen(g);
   const datas = await Promise.all(metas.map(c => getData(c.id)));
+  const bufs = await Promise.all(datas.map(d => d && d.data.arrayBuffer()));   // alle Videos gleichzeitig laden
+  if (g !== openGen) return;   // inzwischen zurück, der Vergleich öffnet nicht mehr
   closePlayer();
+  closeThumbDecoder();
   closeRange();
   const n = metas.length;
   // Immer im Raster aus zwei mal zwei Feldern, so sind die Videos bei zwei, drei und vier gleich groß.
@@ -79,7 +84,7 @@ async function openCompare(ids) {
     const frames = d.frames;
     const t = {
       no: k + 1, meta: metas[k], cfg: d.cfg, frames,
-      bytes: new Uint8Array(await d.data.arrayBuffer()),
+      bytes: new Uint8Array(bufs[k]),
       first: clamp(d.skip || 0, 0, frames.length - 1),
       idx: new Map(frames.map((f, i) => [f[0], i])),
       rect: { x: (k % cols) * (CMP_TW + CMP_GAP), y: Math.floor(k / cols) * (CMP_TH + CMP_GAP), w: CMP_TW, h: CMP_TH },
@@ -89,7 +94,7 @@ async function openCompare(ids) {
     t.off = tMs(t, t.first);   // zu Beginn stehen alle Videos am Anfang
     tiles.push(t);
   }
-  if (tiles.length < 2) return;
+  if (tiles.length < 2) return endOpen(g);
   viewMode = 'compare';
   cmp = {
     tiles, m: 0, mMin: 0, mMax: 0, playing: false, clock: null, saved: [], nr: 0,
@@ -119,6 +124,7 @@ async function openCompare(ids) {
   buildAlign();
   for (const t of tiles) seekTile(t, tileIndexAt(t, t.off));
   cmpUi();
+  endOpen(g);
 }
 
 function closeCompare() {
@@ -234,7 +240,7 @@ function seekTile(t, i) {
   try {
     tileDecoder(t);
     for (let k = tileKeyBefore(t, i); k <= i; k++) t.dec.decode(tileChunk(t, k));
-  } catch (e) { console.warn(e); t.dec = null; }
+  } catch (e) { console.warn(e); closeCodec(t.dec); t.dec = null; }
   const gen = t.gen;
   setTimeout(() => {
     if (gen !== t.gen || t.target !== i || t.soft || !cmp) return;

@@ -250,6 +250,8 @@ function enterAnalysis() {
 // ---------- Videoseite direkt aus dem Betrieb ----------
 // Die Kamera nimmt weiter in den Puffer auf. Zurück geht es in die verzögerte Wiedergabe.
 
+let reviewLeaving = false;   // die Rückkehr in die Wiedergabe läuft schon
+
 async function enterReview(p) {
   if (reviewing || mode !== 'run') return;
   const saved = await p.catch(() => null);
@@ -263,6 +265,7 @@ async function enterReview(p) {
   history.pushState({ v: 'review' }, '');
   listClips = await allClips();
   listImages = (await allImages()).filter(im => isCmp(im) || clipById(im.clipId));
+  if (!reviewing || reviewLeaving) return;   // schon wieder zurück, bevor die Videoseite stand
   $('pBack').textContent = tr('‹ Wiedergabe');
   $('aPlayer').classList.add('review');
   $('run').classList.add('hidden');
@@ -270,10 +273,13 @@ async function enterReview(p) {
   try { await openClip(clipById(saved.id) || saved); }
   catch (e) { console.warn(e); }
   // Ohne Video zurück in die Wiedergabe
-  if (!pc && reviewing) history.back();
+  if (!pc && reviewing && !reviewLeaving) history.back();
 }
 
 async function leaveReview() {
+  if (reviewLeaving) return;
+  reviewLeaving = true;
+  cancelOpen();
   await flushImageEdits();
   closePlayer();
   closeRange();
@@ -283,10 +289,13 @@ async function leaveReview() {
   $('pBack').textContent = tr('‹ Übersicht');
   restartRunPlayback();
   reviewing = false;
+  reviewLeaving = false;
   $('run').classList.remove('hidden');
 }
 
 function leaveAnalysis() {
+  cancelOpen();
+  listGen++;   // auch die Vorschaubilder hören auf
   closePlayer();
   closeThumbDecoder();
   $('analysis').classList.add('hidden');
@@ -317,6 +326,10 @@ function dayLabel(day) {
 
 let listUrls = [];
 let listGen = 0;
+// Jedes Öffnen eines Videos, Bildes oder Vergleichs bekommt eine Nummer. Wer zurückgeht, bricht ein laufendes Öffnen ab.
+let openGen = 0, openBusy = 0;
+function cancelOpen() { openGen++; openBusy = 0; }
+function endOpen(g) { if (openBusy === g) openBusy = 0; }
 let listScroll = null;   // Position der Liste, bevor ein Video geöffnet wurde
 let listClips = [];
 let listImages = [];
@@ -327,6 +340,7 @@ const passesFilter = c => (!listFilter.star || c.star) && (!listFilter.name || c
 const clipById = id => listClips.find(c => c.id === id);
 
 async function showList() {
+  cancelOpen();
   await flushImageEdits();
   closePlayer();
   $('aPlayer').classList.add('hidden');
@@ -475,8 +489,18 @@ function closeDd() {
   ddOpen.dd.classList.remove('open');
   ddOpen = null;
 }
-// Ein Tippen daneben schließt die Liste
-document.addEventListener('pointerdown', e => { if (ddOpen && !e.target.closest('.ddPop, .dd')) closeDd(); }, true);
+// Ein Tippen daneben schließt die Liste und löst nichts darunter aus, wie bei der Auswahl von Android
+let ddSwallow = false;
+document.addEventListener('pointerdown', e => {
+  ddSwallow = false;
+  if (ddOpen && !e.target.closest('.ddPop, .dd')) { closeDd(); ddSwallow = true; }
+}, true);
+document.addEventListener('click', e => {
+  if (!ddSwallow) return;
+  ddSwallow = false;
+  e.stopPropagation();
+  e.preventDefault();
+}, true);
 for (const id of ['fName', 'fProp']) makeDd($(id));
 
 // ---------- Ansichten Tage, Wochen, Monate ----------
@@ -485,6 +509,7 @@ for (const id of ['fName', 'fProp']) makeDd($(id));
 const VIEWS = ['day', 'week', 'month'];
 const VIEW_LABEL = { day: 'Tage', week: 'Wochen', month: 'Monate' };
 let listView = 'day';
+let skipPop = false;   // ein Rücksprung im Verlauf, der nur Einträge entfernt
 let viewStack = [];   // Ansicht und Scrollstelle vor jedem Sprung in eine tiefere Stufe
 
 const dayDate = day => { const [y, m, d] = day.split('-').map(Number); return new Date(y, m - 1, d); };
@@ -659,6 +684,8 @@ $('fProp').addEventListener('change', e => { listFilter.prop = e.target.value; r
 // Jedes Tippen schaltet die Ansicht eine Stufe weiter. Die Liste beginnt dann oben.
 $('fView').addEventListener('click', () => {
   listView = VIEWS[(VIEWS.indexOf(listView) + 1) % VIEWS.length];
+  // Die Verlaufseinträge der aufgeklappten Stufen verschwinden mit, sonst wirkt die Zurück-Geste später ins Leere
+  if (viewStack.length) { skipPop = true; history.go(-viewStack.length); }
   viewStack = [];
   renderList(listClips);
   $('aGrid').scrollTop = 0;
@@ -753,15 +780,25 @@ async function renderStorage() {
 async function makeMissingThumbs(clips, gen) {
   for (const c of clips) {
     if (c.thumb) continue;
-    if (gen !== listGen || !$('aPlayer').classList.contains('hidden')) return;
+    if (gen !== listGen || mode !== 'analysis' || !$('aPlayer').classList.contains('hidden')) return;
     try {
-      c.thumb = await makeThumb(c.id);
-      await putClip(c);
+      const thumb = await makeThumb(c.id);
+      if (!(await putThumb(c.id, thumb))) continue;   // inzwischen gelöscht
+      c.thumb = thumb;
       const box = document.querySelector(`.card[data-id="${c.id}"] .th`);
       if (box && gen === listGen) setThumb(box, c.thumb);
     } catch (e) { console.warn(e); }
   }
 }
+
+// Trägt nur das Vorschaubild ein. Ein inzwischen gelöschtes Video entsteht dabei nicht neu,
+// und was sich inzwischen an Name, Stichwort oder Stern geändert hat, bleibt erhalten.
+const putThumb = (id, thumb) => inTx(['clips'], 'readwrite', async t => {
+  const s = t.objectStore('clips');
+  const c = await reqP(s.get(id));
+  if (c) { c.thumb = thumb; await reqP(s.put(c)); }
+  return c;
+});
 
 // Ein gemeinsamer Decoder für alle Vorschaubilder, sie entstehen nacheinander
 let thumbDec = null, thumbOut = null, thumbChain = Promise.resolve();
@@ -810,7 +847,10 @@ async function makeThumbNow(id) {
       const [ts, key, off, len] = fr[i];
       dec.decode(new EncodedVideoChunk({ type: key ? 'key' : 'delta', timestamp: ts, data: bytes.subarray(off - base, off - base + len) }));
     }
-    await dec.flush();
+    await withTimeout(dec.flush(), 4000);
+  } catch (e) {
+    closeThumbDecoder();   // ein hängender Decoder hält sonst alle weiteren Vorschaubilder auf
+    throw e;
   } finally { thumbOut = null; }
   return canvasBlob(cv, 0.75);
 }
@@ -849,6 +889,7 @@ function chunkAt(i) {
 
 // Scheitert der Hardware-Decoder, etwa weil alle belegt sind, dekodiert die App das Video in Software
 let pSoft = false;
+let pOutAt = 0;   // wann der Decoder zuletzt ein Bild geliefert hat
 function resetDecoder() {
   pGen++;
   pQueue.forEach(q => q.frame.close());
@@ -880,6 +921,7 @@ function drawPlayer(f) {
 }
 
 function onPlayerFrame(frame) {
+  pOutAt = performance.now();
   const i = pIndex.get(frame.timestamp);
   if (pPlaying) { pQueue.push({ i, frame }); return; }
   if (i === pTarget) { drawPlayer(frame); pPos = i; updatePlayerUi(); }
@@ -896,7 +938,7 @@ function seek(i) {
   try {
     resetDecoder();
     for (let k = keyBefore(i); k <= i; k++) pdec.decode(chunkAt(k));
-  } catch (e) { console.warn(e); pdec = null; }
+  } catch (e) { console.warn(e); closeCodec(pdec); pdec = null; }
   const gen = pGen;
   // Kommt nach 1,5 s kein Bild, hängt der Hardware-Decoder. Dann in Software noch einmal.
   setTimeout(() => {
@@ -935,6 +977,15 @@ function play() {
   pTarget = -1; pPending = -1;
   pPlaying = true;
   startFeed(pPos);
+  // Kommt nach 1,5 s kein Bild, hängt der Hardware-Decoder. Dann in Software weiter.
+  const gen = pGen, t0 = performance.now();
+  setTimeout(() => {
+    if (gen !== pGen || !pPlaying || pSoft || !pc || pOutAt > t0) return;
+    pSoft = true;
+    closeCodec(pdec);
+    pdec = null;
+    startFeed(pPos);
+  }, 1500);
   requestAnimationFrame(playerTick);
   updatePlayerUi();
 }
@@ -1013,10 +1064,15 @@ function updatePlayerUi() {
 }
 
 async function openClip(c) {
+  const g = ++openGen;
+  openBusy = g;
   const d = await getData(c.id);
-  if (!d) return;
+  if (!d || g !== openGen) return endOpen(g);
+  const bytes = new Uint8Array(await d.data.arrayBuffer());
+  if (g !== openGen) return;   // inzwischen zurück, das Video öffnet nicht mehr
   closePlayer();
-  pc = { meta: c, cfg: d.cfg, frames: d.frames, bytes: new Uint8Array(await d.data.arrayBuffer()) };
+  closeThumbDecoder();   // der Decoder der Vorschaubilder gibt seinen Platz frei
+  pc = { meta: c, cfg: d.cfg, frames: d.frames, bytes };
   pIndex = new Map(pc.frames.map((f, i) => [f[0], i]));
   pFirst = clamp(d.skip || 0, 0, pc.frames.length - 1);
   pPos = pFirst; pTarget = -1; pPending = -1; pPlaying = false; pStill = false;
@@ -1039,6 +1095,7 @@ async function openClip(c) {
   pctx.fillRect(0, 0, pCanvas.width, pCanvas.height);
   updatePlayerUi();
   seek(pFirst);
+  endOpen(g);
 }
 
 // Stern, Name und Stichwort gehören zum Video, auch wenn ein Bild offen ist
@@ -1087,20 +1144,24 @@ function closePlayer() {
 // ---------- Bildfenster ----------
 
 async function openImage(im, scope = null) {
+  const g = ++openGen;
+  openBusy = g;
   await savePromise;
   const c = isCmp(im) ? im : clipById(im.clipId);
-  if (!c) return;
+  if (!c || g !== openGen) return endOpen(g);
   closePlayer();
   $('aPlayer').classList.toggle('cmpImg', isCmp(im));
   closeRange();
   viewMode = 'image';
   pimg = { rec: im, clip: c, scope };
+  savedSig = saveSig();   // solange das Bild lädt, gilt nichts als geändert, sonst überschriebe Zurück seine Zeichnung
   pStill = false;
   $('pStill').classList.add('hidden');
   $('aPlayer').classList.add('imgMode');
   $('aList').classList.add('hidden');
   $('aPlayer').classList.remove('hidden');
   const bmp = await createImageBitmap(im.base);
+  if (g !== openGen) { bmp.close(); return; }
   pCanvas.width = bmp.width;
   pCanvas.height = bmp.height;
   pctx.drawImage(bmp, 0, 0);
@@ -1112,6 +1173,7 @@ async function openImage(im, scope = null) {
   renderSaveBtn();
   $('pTitle').textContent = `${dayLabel(c.day)} · ${imageLabel(c, im)}`;
   fillClipFields(c);
+  endOpen(g);
 }
 
 // Die Pfeile folgen der Übersicht: › zur nächsten Karte rechts davon oder in der nächsten Reihe, ‹ zur Karte davor.
@@ -1213,12 +1275,18 @@ document.addEventListener('click', e => {
   const b = e.target.closest('[data-tab]');
   if (!b) return;
   if (b.dataset.tab === 'analyse' && mode === 'settings') { goFullscreen(); enterAnalysis(); }
-  else if (b.dataset.tab === 'live' && mode === 'analysis') history.back();
+  else if (b.dataset.tab === 'live' && mode === 'analysis') {
+    // Zurück über alle aufgeklappten Stufen bis vor die Analyse
+    const n = viewStack.length + 1;
+    viewStack = [];
+    history.go(-n);
+  }
 });
 
 // Zurück-Taste und Zurück-Geste von Android. Wiedergabe führt zur Liste, Liste zu Live.
 // Im Betrieb bleibt sie wirkungslos, damit ein versehentliches Wischen den Betrieb nicht beendet.
 window.addEventListener('popstate', () => {
+  if (skipPop) { skipPop = false; return; }
   if (helpOpen()) { closeHelp(); return; }   // aus der Hilfe zurück in die Einstellungen
   if (!$('tvCal').classList.contains('hidden')) { closeTvCal(); return; }   // zuerst Bildschirm anpassen, zurück in die Einstellungen
   if (!$('uiDlg').classList.contains('hidden')) {
@@ -1233,13 +1301,15 @@ window.addEventListener('popstate', () => {
     checkKeep();   // eine noch nicht geprüfte Frist, notfalls mit Rückfrage
     return;
   }   // zuerst das Fenster Darstellung
+  if (ddOpen) { closeDd(); history.pushState({ v: 'list' }, ''); return; }   // eine offene Auswahlliste schließt nur sich selbst
   if (mode === 'run') {
-    if (reviewing) { leaveReview(); return; }   // von der Videoseite zurück in die Wiedergabe
+    // Ein zweites Zurück, während die Rückkehr noch läuft, bleibt wie im Betrieb wirkungslos
+    if (reviewing && !reviewLeaving) { leaveReview(); return; }   // von der Videoseite zurück in die Wiedergabe
     history.pushState({ v: 'run' }, '');
     return;
   }
   if (mode !== 'analysis') return;
-  if (!$('aPlayer').classList.contains('hidden')) showList();
+  if (!$('aPlayer').classList.contains('hidden') || openBusy) showList();   // auch ein Video, das noch lädt
   else if (viewStack.length) viewBack();
   else leaveAnalysis();
 });

@@ -173,7 +173,11 @@ const native = (() => {
 
   async function save(file) {
     const buf = new Uint8Array(await file.arrayBuffer());
-    const done = new Promise(r => { saveDone = r; });
+    // Antwortet Android nicht, gilt das Speichern nach einer Minute als gescheitert, sonst bliebe der Knopf gesperrt
+    const done = new Promise(r => {
+      saveDone = r;
+      setTimeout(() => { if (saveDone === r) { saveDone = null; r(false); } }, 60000);
+    });
     send({ t: 'saveStart', name: file.name, mime: file.type || 'application/octet-stream' });
     const step = 1 << 20;
     for (let i = 0; i < buf.length; i += step) bridge.postMessage(buf.slice(i, i + step).buffer);

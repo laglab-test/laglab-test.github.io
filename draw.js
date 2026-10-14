@@ -230,7 +230,7 @@ function renderGridBtn() {
 
 function renderDrawing(handles = true) {
   dctx.clearRect(0, 0, dCanvas.width, dCanvas.height);
-  const k = pxScale();
+  const k = handles ? pxScale() : dCanvas.width / vbox.w;   // gespeichert wird wie bei 1:1, unabhängig vom Zoom
   if (gridOn && handles) drawGrid(k);   // ohne Griffe heißt Speichern, dort bleibt das Raster weg
   for (const s of shapes) drawShape(s, k, handles);
   if (pending) drawShape(pending, k, handles);
