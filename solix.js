@@ -73,7 +73,7 @@
   const TEXT = {
     none: 'Noch keine Powerstation verbunden.',
     search: 'Suche läuft …',
-    notfound: 'Keine Powerstation gefunden. Ist Bluetooth an der Powerstation an und die Anker-App geschlossen?',
+    notfound: 'Keine C300 gefunden. Ist Bluetooth an der Powerstation an und die Anker-App geschlossen?',
     location: 'Für die Suche bitte den Standort am Tablet einschalten.',
     denied: 'Ohne die Erlaubnis für Bluetooth geht es nicht. Bitte in den Android-Einstellungen freigeben.',
     off: 'Bluetooth am Tablet ist aus.',
