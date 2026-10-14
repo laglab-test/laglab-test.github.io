@@ -3,18 +3,18 @@
 // ---------- Powerstation Anker SOLIX, nur in der Vereinsfassung ----------
 // Die Android-Hülle meldet beim Start, welche Zusätze sie kann. Nur dann lädt native.js diese Datei.
 // Sie baut den Abschnitt „06 Powerstation“, den Akkustand oben links im Betrieb und zwei Zeilen der Hilfe selbst auf.
-// Die übrigen Dateien der App wissen nichts davon,
-// so bleibt die kommerzielle Fassung ohne diesen Teil.
-// Machbarkeitstest: „Bericht …“ zeigt Zustand, Verbindung, Aushandeln, Werte und die letzten Ereignisse
-// auf einem Bildschirm, damit ein Foto genügt.
+// Die übrigen Dateien der App wissen nichts davon, so bleibt die kommerzielle Fassung ohne diesen Teil.
 
 (() => {
   const style = document.createElement('style');
   style.textContent = `
-    #solixGrp { --good: #4fc97a; }
+    #solixGrp { --good: #4fc97a; margin-top: 6px; }
     html[data-theme="light"] #solixGrp { --good: #1f8a4c; }
-    .sxRows { display: grid; grid-template-columns: 1fr auto; gap: 6px 14px; margin: 2px 0 4px; font-size: 15px; }
-    .sxRows > span { color: var(--mut); }
+    /* Zeilen wie in einer Tabelle, mit dünnen Linien dazwischen. Die Werte stehen rechts. */
+    .sxRows { display: grid; grid-template-columns: 1fr auto; column-gap: 14px; margin: 0 0 2px; }
+    .sxRows > * { padding: 7px 0; }
+    .sxRows > :nth-child(n+3) { border-top: 1px solid var(--line); }
+    .sxRows > span { color: var(--mut); font-size: 14px; }
     .sxRows b { font: 400 15px var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
     .sxRows b.good { color: var(--good); }
     .sxRows b.mid { color: var(--warn); }
@@ -22,21 +22,6 @@
     .sxState { display: flex; align-items: center; gap: 12px; }
     #sxMsg { flex: 1; color: var(--mut); font-size: 14px; line-height: 1.35; }
     #sxFind { min-height: 44px; padding: 0 14px; white-space: nowrap; }
-    #sxRepOpen { margin-top: 8px; min-height: 36px; padding: 0 12px; font-size: 13px; }
-    #sxRep { position: fixed; inset: 0; z-index: 100; background: var(--bg); color: var(--fg); display: flex; flex-direction: column;
-      padding: 14px 18px; gap: 10px; font: 12.5px/1.45 var(--mono); }
-    #sxRep.hidden { display: none !important; }
-    #sxRep header { display: flex; align-items: center; gap: 16px; font: 600 16px var(--sans); }
-    #sxRep header span { flex: 1; }
-    #sxRep header button { min-height: 44px; padding: 0 18px; }
-    #sxRepBody { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 18px; overflow: auto; }
-    #sxRepBody > div { min-width: 0; }
-    #sxRep h4 { margin: 0 0 4px; font: 600 12px var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--acc-text); }
-    #sxRep h4:not(:first-child) { margin-top: 12px; }
-    #sxRep p { margin: 0; white-space: pre-wrap; word-break: break-all; }
-    #sxRep .ok { color: var(--good, #4fc97a); }
-    #sxRep .err { color: var(--bad); }
-    #sxRep .dim { color: var(--mut); }
     /* Akkustand im Betrieb oben links, im Stil der Sekunden oben rechts. Der Betrieb ist immer dunkel, daher das helle Grün. */
     #sxBadge { position: absolute; top: 3cqh; left: 2.5cqw; pointer-events: none; color: #4fc97a;
       font: 400 4.5cqh/1.1 var(--sans); font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
@@ -60,8 +45,7 @@
       <span>Temperatur</span><b id="sxTemp">–</b>
       <span>Leistung rein · raus</span><b><span id="sxIn">–</span> · <span id="sxOut">–</span></b>
     </div>
-    <div class="sxState"><span id="sxMsg"></span><button class="tool" id="sxFind">Verbinden …</button></div>
-    <button class="tool" id="sxRepOpen">Bericht …</button>`;
+    <div class="sxState"><span id="sxMsg"></span><button class="tool" id="sxFind">Verbinden …</button></div>`;
   $('panel').insertBefore(grp, $('panel').querySelector('.actions'));
 
   const badge = document.createElement('div');
@@ -86,14 +70,6 @@
     add('h-run', 'Bild', '<span style="color:#4fc97a">78 %</span>', 'Akkustand der Powerstation oben links. Grün ab 50 %, gelb ab 20 %, sonst rot');
   });
 
-  // Bericht über den ganzen Bildschirm, außerhalb von #app, damit er auch bei „Bildschirm anpassen“ alles zeigt
-  const rep = document.createElement('div');
-  rep.id = 'sxRep';
-  rep.className = 'hidden';
-  rep.innerHTML = `<header><span>Powerstation · Bericht</span><button class="tool" id="sxRepClose">Schließen</button></header>
-    <div id="sxRepBody"><div id="sxRep1"></div><div id="sxRep2"></div><div id="sxRep3"></div></div>`;
-  document.body.append(rep);
-
   const TEXT = {
     none: 'Noch keine Powerstation verbunden.',
     search: 'Suche läuft …',
@@ -109,73 +85,6 @@
   };
 
   let state = 'none';
-  const log = [];
-  const now = () => new Date().toLocaleTimeString('de-DE');
-  function note(s) {
-    log.push(now() + '  ' + s);
-    if (log.length > 200) log.shift();
-    if (!rep.classList.contains('hidden')) renderReport();
-  }
-
-  // Was der Bericht zusammenfasst
-  const info = { msg: '', mac: '', mtu: '', disco: '', services: [], steps: {}, attempts: '', errors: [], vals: null, raw: null, valCount: 0, valAt: '' };
-  const STEPS = [['0801', 'Antwort 1'], ['0803', 'Antwort 2'], ['0829', 'Antwort 3, Gerät'], ['0805', 'Antwort 4'],
-    ['0821', 'Schlüssel der Powerstation'], ['4822', 'Bestätigung, nicht immer']];
-
-  function collect(m) {
-    if (m.state) {
-      info.msg = m.state + (m.msg ? ' · ' + m.msg : '');
-      if (m.mac) info.mac = m.mac;
-      if (m.state === 'connect') info.steps = {};   // jeder Versuch handelt neu aus
-    }
-    const s = m.stage;
-    if (s) {
-      if (s.startsWith('mtu ')) info.mtu = s.slice(4);
-      else if (s.startsWith('Dienstsuche')) { info.disco = s; info.services = []; }
-      else if (s.startsWith('Dienst ') || s.startsWith('  Merkmal')) info.services.push(s.trim());
-      else if (s.startsWith('Neuer Versuch')) info.attempts = now() + ' ' + s;
-      else if (s.startsWith('Fehler')) { info.errors.push(now() + ' ' + s); if (info.errors.length > 5) info.errors.shift(); }
-      else if (/^[0-9a-f]{4}$/.test(s)) info.steps[s] = now();
-    }
-    if (m.vals) { info.vals = m.vals; info.raw = m.raw || null; info.valCount++; info.valAt = now(); }
-  }
-
-  function renderReport() {
-    const esc = t => String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
-    const line = (k, v, cls = '') => `<p><span class="dim">${esc(k)}</span> <span class="${cls}">${esc(v)}</span></p>`;
-    let a = `<h4>Zustand</h4>${line('App', 'Stand ' + APP_VERSION + ' · ' + now())}${line('Zustand', info.msg || '–', state === 'ok' ? 'ok' : '')}`;
-    a += line('Gerät', info.mac || '–') + line('Versuche', info.attempts || '–');
-    a += `<h4>Verbindung</h4>${line('MTU', info.mtu || '–')}${line('Dienste', info.disco || '–')}`;
-    // Die Standarddienste 1800 und 1801 sind uninteressant, gezeigt wird der Rest
-    const sv = info.services.filter(x => !/0000180[01]-|00002a0[015]-|00002b(3a|29)-/.test(x));
-    a += sv.length ? `<p>${esc(sv.join('\n'))}</p>` : '<p class="dim">–</p>';
-    a += '<h4>Aushandeln</h4>' + STEPS.map(([c, t]) => line(c + ' ' + t, info.steps[c] ? '✓ ' + info.steps[c] : '–', info.steps[c] ? 'ok' : '')).join('');
-    if (info.errors.length) a += `<h4>Fehler</h4><p class="err">${esc(info.errors.join('\n'))}</p>`;
-    let b = `<h4>Werte</h4>${line('Empfangen', info.valCount ? info.valCount + ' mal, zuletzt ' + info.valAt : 'noch nie', info.valCount ? 'ok' : 'err')}`;
-    if (info.vals) {
-      const v = info.vals;
-      b += line('Akku', v.bat != null ? v.bat + ' %' : '–') + line('Restzeit', v.min != null ? v.min + ' min' : '–');
-      b += line('Temperatur', v.temp != null ? v.temp + ' °C' : '–') + line('Rein · raus', (v.pin ?? '–') + ' W · ' + (v.pout ?? '–') + ' W');
-      b += line('Laden', v.chg === 2 ? 'lädt' : v.chg === 1 ? 'entlädt' : v.chg === 0 ? 'ruht' : '–');
-    }
-    if (info.raw) b += `<h4>Rohwerte</h4><p>${esc(Object.entries(info.raw).map(([k, v]) => k + '=' + v).join(' '))}</p>`;
-    // Werte, Rohwerte und Dienste stehen schon links, hier nur die übrigen Ereignisse
-    const events = log.filter(l => !/ {2}(Werte|roh|Schritt Dienst|Schritt {3}Merkmal) /.test(l));
-    const c = `<h4>Letzte Ereignisse</h4><p>${esc(events.slice(-38).join('\n'))}</p>`;
-    $('sxRep1').innerHTML = a;
-    $('sxRep2').innerHTML = b;
-    $('sxRep3').innerHTML = c;
-  }
-
-  function openReport() {
-    renderReport();
-    rep.classList.remove('hidden');
-    history.pushState({ v: 'sxrep' }, '');
-  }
-  $('sxRepOpen').addEventListener('click', openReport);
-  $('sxRepClose').addEventListener('click', () => history.back());
-  // Die Zurück-Geste schließt den Bericht. Andere Teile der App reagieren in den Einstellungen nicht darauf.
-  window.addEventListener('popstate', () => rep.classList.add('hidden'));
 
   function clearValues() {
     for (const id of ['sxBat', 'sxTime', 'sxTemp', 'sxIn', 'sxOut']) { $(id).textContent = '–'; $(id).className = ''; }
@@ -198,10 +107,11 @@
   function renderValues(v) {
     if (state !== 'ok') return;
     if (v.bat != null) {
+      const cls = v.bat >= 50 ? 'good' : v.bat >= 20 ? 'mid' : 'low';
       $('sxBat').textContent = v.bat + ' %';
-      $('sxBat').className = v.bat >= 50 ? 'good' : v.bat >= 20 ? 'mid' : 'low';
+      $('sxBat').className = cls;
       badge.textContent = v.bat + ' %';
-      badge.className = $('sxBat').className;
+      badge.className = cls;
     }
     if (v.min != null) {
       const charging = v.chg === 2;   // beim Laden meldet die Powerstation die Zeit bis voll
@@ -216,14 +126,8 @@
   window.addEventListener('laglab-native', e => {
     const m = e.detail;
     if (m.t !== 'solix') return;
-    collect(m);
-    if (m.state) { renderState(m.state, m.msg); note('Zustand ' + m.state + (m.msg ? ' · ' + m.msg : '') + (m.mac ? ' · ' + m.mac : '')); }
-    if (m.stage) note('Schritt ' + m.stage);
-    if (m.vals) {
-      renderValues(m.vals);
-      note('Werte ' + JSON.stringify(m.vals));
-      if (m.raw) note('roh ' + Object.entries(m.raw).map(([k, v]) => k + '=' + v).join(' '));
-    }
+    if (m.state) renderState(m.state, m.msg);
+    if (m.vals) renderValues(m.vals);
   });
 
   $('sxFind').addEventListener('click', () => native.send({ t: 'solix', op: 'find' }));
