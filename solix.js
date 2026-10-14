@@ -8,7 +8,7 @@
 (() => {
   const style = document.createElement('style');
   style.textContent = `
-    #solixGrp { --good: #4fc97a; margin-top: 6px; }
+    #solixGrp { --good: #4fc97a; margin-top: 6px; border-bottom: none; }   /* darunter folgt nur Start, keine Linie */
     html[data-theme="light"] #solixGrp { --good: #1f8a4c; }
     /* Zeilen wie in einer Tabelle, mit dünnen Linien dazwischen. Die Werte stehen rechts. */
     .sxRows { display: grid; grid-template-columns: 1fr auto; column-gap: 14px; margin: 0 0 2px; }
